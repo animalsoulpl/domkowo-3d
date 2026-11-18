@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pl"><head><meta charset="utf-8"><title>Podgląd – budowanie domów</title>
+<style>body{margin:0;overflow:hidden;font-family:sans-serif}#info{position:fixed;top:8px;left:8px;background:#fffd;padding:8px 12px;border-radius:10px;font-size:13px}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head><body><div id="info">ładowanie…</div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { buildCharacter, animateCharacter, loadAnimations } from './postac.js';
+const r = new THREE.WebGLRenderer({ antialias: true }); r.setSize(innerWidth, innerHeight); r.setPixelRatio(devicePixelRatio); document.body.appendChild(r.domElement);
+r.toneMapping = THREE.ACESFilmicToneMapping; r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#bfe0ff');
+const q = new URLSearchParams(location.search);
+const cam = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.05, 300);
+cam.position.set(+(q.get('cx') ?? 8), +(q.get('cy') ?? 13), +(q.get('cz') ?? 20));
+const ctl = new OrbitControls(cam, r.domElement); ctl.target.set(+(q.get('tx') ?? 8), 1, +(q.get('tz') ?? 2));
+scene.add(new THREE.HemisphereLight('#fff', '#8a7a66', 1.1));
+const sun = new THREE.DirectionalLight('#fff4e0', 2.3); sun.position.set(14, 22, 16); sun.target.position.set(8, 0, 2); scene.add(sun, sun.target);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -20, right: 20, top: 20, bottom: -20 }); sun.shadow.bias = -0.0004;
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: '#86c46a' })); ground.rotation.x = -Math.PI / 2; ground.position.y = -0.01; ground.receiveShadow = true; scene.add(ground);
+const L = new GLTFLoader(), cache = new Map();
+const load = u => { if (!cache.has(u)) cache.set(u, new Promise((ok, err) => L.load(u, g => ok(g.scene), undefined, err))); return cache.get(u); };
+async function put(u, x, z, rot = 0, s = 1, y = 0) {
+  const src = await load(u); const o = src.clone(true);
+  o.traverse(m => { if (m.isMesh) { m.castShadow = m.receiveShadow = true; } });
+  o.position.set(x, y, z); o.rotation.y = rot; o.scale.setScalar(s); scene.add(o); return o;
+}
+const C = 'assets/budowanie/chaty/', N = 'assets/budowanie/nowoczesne/', M = 'assets/budowanie/meble/';
+const PI = Math.PI, H = PI / 2;
+const cut = q.get('sciany') === 'niskie';
+try {
+  // ---------- CHATA (moduły 2 m) : x 0..6, z 0..4 ----------
+  for (const [x, z] of [[1, 1], [3, 1], [5, 1], [1, 3], [3, 3], [5, 3]]) await put(C + 'Floor_WoodDark.gltf', x, z);
+  await put(C + 'Wall_Plaster_Straight.gltf', 1, 0, 0); await put(C + 'Wall_Plaster_Window_Wide_Round.gltf', 3, 0, 0); await put(C + 'Wall_Plaster_Straight.gltf', 5, 0, 0);
+  if (!cut) { await put(C + 'Wall_Plaster_Window_Wide_Round.gltf', 1, 4, PI); await put(C + 'Wall_Plaster_Door_Round.gltf', 3, 4, PI); await put(C + 'Wall_Plaster_Window_Wide_Round.gltf', 5, 4, PI); }
+  await put(C + 'Wall_Plaster_Straight.gltf', 0, 1, -H); await put(C + 'Wall_Plaster_Window_Thin_Round.gltf', 0, 3, -H);
+  if (!cut) { await put(C + 'Wall_Plaster_Straight.gltf', 6, 1, H); await put(C + 'Wall_Plaster_Window_Thin_Round.gltf', 6, 3, H); }
+  for (const [x, z] of [[0, 0], [6, 0], [0, 4], [6, 4]]) await put(C + 'Corner_Exterior_Wood.gltf', x, z);
+  if (!cut) await put(C + 'Roof_RoundTiles_6x4.gltf', 3, 2, 0, 1, 3.0);
+  await put(C + 'Prop_Chimney.gltf', 5, 1, 0, 1, cut ? 0 : 3.0).then(o => { if (cut) o.visible = false; });
+  for (let i = 0; i < 4; i++) await put(C + 'Prop_WoodenFence_Single.gltf', -1 + i * 2, 6.5);
+  await put(C + 'Prop_Vine2.gltf', 0, 4.25, 0);
+  // meble w chacie (Kenney ×2)
+  await put(M + 'bedDouble.glb', 3.9, 2.5, 0, 2);
+  await put(M + 'kitchenStove.glb', 0.4, 1.3, H, 2);
+  await put(M + 'kitchenCabinet.glb', 0.4, 2.2, H, 2);
+  await put(M + 'tableRound.glb', 2.2, 2.4, 0, 2);
+  await put(M + 'chair.glb', 1.6, 2.6, H, 2); await put(M + 'chair.glb', 2.8, 2.1, -H, 2);
+  await put(M + 'rugRound.glb', 3.0, 3.2, 0, 2);
+  await put(M + 'pottedPlant.glb', 5.4, 3.4, 0, 2);
+
+  // ---------- NOWOCZESNY DOM (moduły 2 m) : x 10..16, z 0..4 ----------
+  const X = 10;
+  for (const [x, z] of [[1, 1], [3, 1], [5, 1], [1, 3], [3, 3], [5, 3]]) await put(N + 'floor.glb', X + x, z);
+  // ściany kenney: wall.glb leży wzdłuż osi Z (x=0)
+  await put(N + 'wall.glb', X, 1); await put(N + 'wall-window-square.glb', X, 3);
+  await put(N + 'wall-window-wide-square.glb', X + 2, 0, H); await put(N + 'wall.glb', X + 5, 0, H);
+  if (!cut) {
+    await put(N + 'wall-window-square.glb', X + 6, 1); await put(N + 'wall.glb', X + 6, 3);
+    await put(N + 'wall-doorway-square.glb', X + 1, 4, H); await put(N + 'wall-window-wide-square-detailed.glb', X + 4, 4, H);
+    for (const [x, z] of [[1, 1], [3, 1], [5, 1], [1, 3], [3, 3], [5, 3]]) await put(N + 'roof-flat-center.glb', X + x, z, 0, 1, 2.4);
+  }
+  for (const [x, z] of [[0, 0], [6, 0], [0, 4], [6, 4]]) await put(N + 'column.glb', X + x, z);
+  // meble w nowoczesnym domu
+  await put(M + 'loungeDesignSofa.glb', X + 1.2, 3.2, 0, 2);
+  await put(M + 'tableCoffeeGlass.glb', X + 1.6, 2.2, 0, 2);
+  await put(M + 'cabinetTelevision.glb', X + 1.4, 0.9, 0, 2); await put(M + 'televisionModern.glb', X + 2.2, 0.9, 0, 2, 0.8);
+  await put(M + 'kitchenFridgeLarge.glb', X + 5.2, 0.9, 0, 2);
+  await put(M + 'kitchenBar.glb', X + 4.0, 2.4, 0, 2);
+  await put(M + 'lampSquareFloor.glb', X + 0.6, 3.6, 0, 2);
+  await put(M + 'pottedPlant.glb', X + 5.4, 3.5, 0, 2);
+
+  // ---------- postacie dla skali ----------
+  const clips = await loadAnimations();
+  const a = await buildCharacter({ body: 'f', outfit: 'Peasant', hairModel: 'Hair_Long', hair: '#7a4a2a' });
+  a.root.position.set(3, 0, 5.2); scene.add(a.root);
+  const b = await buildCharacter({ body: 'm', outfit: 'Peasant', hairModel: 'Hair_SimpleParted', hair: '#3b2a1e' });
+  b.root.position.set(X + 3, 0, 5.2); scene.add(b.root);
+  window.chars = [a, b]; window.clips = clips;
+  document.getElementById('info').innerHTML = '<b>Chata</b> (Quaternius) i <b>nowoczesny dom</b> (Kenney) z meblami (Kenney). Przeciągnij, żeby obrócić.';
+} catch (e) { document.getElementById('info').textContent = 'BŁĄD: ' + e.message; console.error(e); }
+let t = 0;
+window.render = (dt = 0.016) => { t += dt; (window.chars || []).forEach(c => animateCharacter(c, { pose: 'stand' }, dt, t, window.clips)); ctl.update(); r.render(scene, cam); };
+(function loop() { window.render(); requestAnimationFrame(loop); })();
+</script></body></html>

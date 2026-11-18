@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pl"><head><meta charset="utf-8"><title>Test dźwięku</title>
+<style>body{font-family:sans-serif;padding:20px}button{margin:4px;padding:8px 12px;font-size:15px}</style></head><body>
+<h2>🔊 Test dźwięku Domkowa</h2>
+<p>Muzyka: <button data-m="home">🏡 Dom</button><button data-m="build">🔨 Budowanie</button><button data-m="work">💼 Praca</button></p>
+<p>Otoczenie: <button data-a="home">🐦 Osiedle (dzień)</button><button data-a="night">🦗 Osiedle (noc)</button><button data-a="work">🏢 Praca</button></p>
+<p>Efekty: <span id="sfx"></span></p>
+<pre id="st"></pre>
+<script type="module">
+import * as SND from './dzwiek.js';
+SND.init();
+for (const n of ['click', 'coins', 'cash', 'fanfare', 'success', 'levelup', 'pop', 'notify', 'bad', 'place', 'remove', 'step', 'door']) { const b = document.createElement('button'); b.textContent = n; b.onclick = () => SND.play(n); document.getElementById('sfx').appendChild(b); }
+document.querySelectorAll('[data-m]').forEach(b => b.onclick = () => SND.setMode(b.dataset.m));
+document.querySelectorAll('[data-a]').forEach(b => b.onclick = () => b.dataset.a === 'night' ? SND.setAmbient('home', true) : SND.setAmbient(b.dataset.a, false));
+SND.setAmbient('home', false);
+setInterval(() => document.getElementById('st').textContent = JSON.stringify(SND.debug()), 300);
+window.SND = SND;
+</script></body></html>

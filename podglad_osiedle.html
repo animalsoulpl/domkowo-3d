@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pl"><head><meta charset="utf-8"><title>Podgląd – domy osiedla</title>
+<style>body{margin:0;overflow:hidden}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+const r = new THREE.WebGLRenderer({ antialias: true }); r.setSize(innerWidth, innerHeight); document.body.appendChild(r.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#bfe0ff');
+const q = new URLSearchParams(location.search);
+const cam = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.1, 400); cam.position.set(+(q.get('cx') ?? 40), +(q.get('cy') ?? 25), +(q.get('cz') ?? 45));
+const ctl = new OrbitControls(cam, r.domElement); ctl.target.set(+(q.get('tx') ?? 40), 0, +(q.get('tz') ?? 0));
+scene.add(new THREE.HemisphereLight('#fff', '#8a7a66', 1.4)); const sun = new THREE.DirectionalLight('#fff', 2); sun.position.set(10, 20, 15); scene.add(sun);
+const g = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshStandardMaterial({ color: '#86c46a' })); g.rotation.x = -Math.PI / 2; scene.add(g);
+const L = new GLTFLoader(); const S = +(q.get('s') ?? 7);
+const list = (q.get('m') || 'abcdefghijklmnopqrstu').split('');
+list.forEach((c, i) => L.load(`assets/osiedle/domy/building-type-${c}.glb`, gl => {
+  const o = gl.scene; o.scale.setScalar(S); o.position.set((i % 7) * 13, 0, Math.floor(i / 7) * 14); scene.add(o);
+  const p = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.75, 0.3), new THREE.MeshStandardMaterial({ color: 'red' })); p.position.set((i % 7) * 13, 0.875, Math.floor(i / 7) * 14 + 5.5); scene.add(p);
+}));
+(function loop() { ctl.update(); r.render(scene, cam); requestAnimationFrame(loop); })();
+</script></body></html>

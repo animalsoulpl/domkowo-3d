@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pl"><head><meta charset="utf-8"><title>Podgląd – szczegółowe domy</title>
+<style>body{margin:0;overflow:hidden}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import * as DET from './detale.js';
+const r = new THREE.WebGLRenderer({ antialias: true }); r.setSize(innerWidth, innerHeight); r.setPixelRatio(devicePixelRatio); document.body.appendChild(r.domElement);
+r.shadowMap.enabled = true; r.toneMapping = THREE.ACESFilmicToneMapping;
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#bfe0ff');
+const q = new URLSearchParams(location.search);
+const cam = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.1, 400); cam.position.set(+(q.get('cx') ?? 6), +(q.get('cy') ?? 9), +(q.get('cz') ?? 22));
+const ctl = new OrbitControls(cam, r.domElement); ctl.target.set(+(q.get('tx') ?? 0), 3, +(q.get('tz') ?? -2));
+scene.add(new THREE.HemisphereLight('#fff', '#8a7a66', 1.1)); const sun = new THREE.DirectionalLight('#fff4e0', 2.2); sun.position.set(15, 25, 20); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30 }); scene.add(sun);
+const g = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshStandardMaterial({ color: '#86c46a' })); g.rotation.x = -Math.PI / 2; g.receiveShadow = true; scene.add(g);
+const cfgs = [
+  { w: 9, d: 7, wall: '#f1ead9', roof: '#3b3f46', shutter: '#2f5a3a', door: '#b0302b', roofType: 'gable', side: 'garage', dormers: 2 },
+  { w: 9.5, d: 7, wall: '#a9c4d8', roof: '#4a4038', shutter: '#ffffff', door: '#1f3a5f', roofType: 'hip', side: 'bay', left: true, dormers: 1 },
+  { w: 8.6, d: 7, wall: '#e9d7a8', roof: '#5a3d32', shutter: '#7a2e2e', door: '#2f5a3a', roofType: 'gable', side: 'garage', left: true, dormers: 0 },
+];
+const sel = q.get('i') !== null ? [+q.get('i')] : [0, 1, 2];
+sel.forEach((i, k) => { const h = DET.buildHouse({ ...cfgs[i], seed: i }); h.group.position.x = (k - (sel.length - 1) / 2) * 18; scene.add(h.group); });
+(function loop() { ctl.update(); r.render(scene, cam); requestAnimationFrame(loop); })();
+</script></body></html>

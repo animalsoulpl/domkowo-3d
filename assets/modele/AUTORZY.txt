@@ -1,0 +1,12 @@
+Modele 3D (Poly Pizza, https://poly.pizza) – licencje CC0 i CC-BY 3.0
+=====================================================================
+fortepian.glb          – „Piano”, jeremy – CC-BY 3.0 – https://poly.pizza/m/7U-93vxPOER
+naroznik.glb           – „L Couch”, Quaternius – CC0 – https://poly.pizza/m/1kwsjhpY84
+sofa.glb               – „Couch”, CMHT Oculus – CC-BY 3.0 – https://poly.pizza/m/cZltkfbEKS8
+wanna_wolnostojaca.glb – „Bathtub”, CreativeTrio – CC0 – https://poly.pizza/m/2MbbdwbTjt
+wanna_retro.glb        – „Tub”, sirkitree – CC-BY 3.0 – https://poly.pizza/m/4ZzY5vQ_egA
+monstera.glb           – „Monstera Plant”, Isa Lousberg – CC0 – https://poly.pizza/m/pkmHvN1O2V
+monstera_mala.glb      – „Small Monstera”, Isa Lousberg – CC0 – https://poly.pizza/m/5Jmd3e25Sv
+donica_czarna.glb      – „Flower Pot”, Neko – CC-BY 3.0 – https://poly.pizza/m/A7g6zgWaCj
+roslinka.glb           – „Plant”, Poly by Google – CC-BY 3.0 – https://poly.pizza/m/8KMKYzAqWjp
+CC-BY 3.0: https://creativecommons.org/licenses/by/3.0/ (wymagane podanie autora – ten plik)
