@@ -229,7 +229,41 @@ export function animateCharacter(ch, st, dt, t, clips) {
 //  które przemalowujemy kolorami wierzchołków na różne kroje, a fryzury,
 //  spódnice, kaptury i akcesoria to osobne siatki przypięte do kości.
 // =====================================================================
-const HAIR_CAP = { long: 'Hair_Long', ponytail: 'Hair_BuzzedFemale', bun: 'Hair_BuzzedFemale', bob: 'Hair_BuzzedFemale', pixie: 'Hair_BuzzedFemale', buns: 'Hair_Buns', fringe: 'Hair_Buzzed', wavy: 'Hair_SimpleParted', parted: 'Hair_SimpleParted', buzz: 'Hair_Buzzed', bald: null };
+const HAIR_CAP = {
+  long: 'Hair_Long', waves: 'Hair_BuzzedFemale', ponytail: 'Hair_BuzzedFemale', ponytail_bangs: 'Hair_BuzzedFemale',
+  bun: 'Hair_BuzzedFemale', bob: 'Hair_BuzzedFemale', pixie: 'Hair_BuzzedFemale', buns: 'Hair_Buns',
+  afro: 'Hair_Buzzed', messy: 'Hair_Buzzed', fringe: 'Hair_Buzzed', wavy: 'Hair_SimpleParted',
+  parted: 'Hair_SimpleParted', buzz: 'Hair_Buzzed', bald: null
+};
+// Ciche wykrywanie opcjonalnych modularnych modeli .glb w ./models/characters/ (zero błędów w konsoli gdy brak)
+const CHAR_GLB_BASE = './models/characters/';
+const charGlbChecked = new Map();
+async function tryLoadCharGlb(filename) {
+  if (!filename) return null;
+  if (charGlbChecked.has(filename)) return charGlbChecked.get(filename);
+  const url = CHAR_GLB_BASE + filename;
+  const p = fetch(url, { method: 'HEAD' }).then(r => {
+    if (!r.ok) return null;
+    return loadGltf(url).then(g => g.scene).catch(() => null);
+  }).catch(() => null);
+  charGlbChecked.set(filename, p);
+  return p;
+}
+function specFromLook(look, fem) {
+  if (!look.topStyle && !look.bottomStyle) return SPEC[look.outfitType] || SPEC[fem ? 'tee' : 'shirt_rolled'];
+  const ts = look.topStyle || 'tee', bs = look.bottomStyle || 'jeans';
+  const sp = { sleeve: 'short', neck: 'round' };
+  if (ts === 'blazer') { sp.sleeve = 'long'; sp.open = 'blazer'; }
+  else if (ts === 'sweater') { sp.sleeve = 'long'; sp.hem = true; sp.cuffs = true; }
+  else if (ts === 'hoodie') { sp.sleeve = 'long'; sp.hem = true; sp.cuffs = true; sp.hood = true; sp.pocket = true; }
+  else if (ts === 'tank') { sp.sleeve = 'none'; sp.neck = 'v'; }
+  else if (ts === 'shirt') { sp.sleeve = 'rolled'; sp.placket = true; sp.tuck = true; sp.belt = true; }
+  else { sp.sleeve = 'short'; sp.tuck = false; }
+  if (bs === 'skirt') { sp.skirt = { hem: 0.56, flare: 0.65 }; }
+  else if (bs === 'gown') { sp.skirt = { hem: 0.14, flare: 0.85 }; sp.dress = true; sp.sash = true; }
+  else if (bs === 'shorts') { sp.shorts = true; }
+  return sp;
+}
 const SPEC = {
   dress_flare: { sleeve: 'short', neck: 'v', skirt: { hem: 0.5, flare: 1 }, dress: true, sash: true },
   dress_fit: { sleeve: 'none', neck: 'round', skirt: { hem: 0.56, flare: 0.35 }, dress: true },
@@ -324,7 +358,7 @@ async function buildModern(look) {
   const fem = look.body !== 'm', G = fem ? 'Female' : 'Male';
   const hs = look.hairStyle || (fem ? 'long' : 'parted'), capName = HAIR_CAP[hs];
   const beard = fem ? 'none' : (look.beard === true ? 'full' : look.beard || 'none');
-  const spec = SPEC[look.outfitType] || SPEC[fem ? 'tee' : 'shirt_rolled'];
+  const spec = specFromLook(look, fem);
   const acc = look.acc || {};
   const kinds = ['outfit', 'head'], urls = [A + `stroje/${G}_Peasant.gltf`, A + `baza/Superhero_${G}_FullBody.gltf`];
   if (capName) { kinds.push('hair'); urls.push(A + `fryzury/${capName}.gltf`); }
@@ -346,7 +380,7 @@ async function buildModern(look) {
     else if (kind === 'head') {
       if (/Superhero/i.test(mn) || /Superhero/i.test(o.name)) { keepHeadOnly(o, ['Head', 'neck_01']); tint(o, look.skin || '#f0c9aa'); headMesh = o; }
       else if (/Eyes/i.test(mn)) { tint(o, look.eyes || '#5a3a22'); eyesMesh = o; }
-      else if (/Hair/i.test(mn)) { tint(o, look.hair || '#5a3a22'); browMesh = o; }
+      else if (/Hair/i.test(mn)) { tint(o, look.browColor || look.hair || '#5a3a22'); browMesh = o; }
     } else if (kind === 'hair') { tint(o, look.hair || '#5a3a22'); capMeshes.push(o); }
     else if (kind === 'beard') { tint(o, look.hair || '#5a3a22'); beardMeshes.push(o); }
   }));
@@ -355,7 +389,8 @@ async function buildModern(look) {
   const head = byName.get('Head'), wp = n => byName.get(n).getWorldPosition(new THREE.Vector3());
   const rawH = (head.getWorldPosition(new THREE.Vector3()).y - Math.min(0, wp('foot_l').y)) + 0.16;
   const s = (TARGET_HEIGHT * (look.age === 'senior' ? 0.97 : 1) * (look.height || 1)) / rawH;
-  root.scale.setScalar(s); root.updateMatrixWorld(true);
+  const buildMul = look.build === 'slim' ? [0.90, 0.91] : look.build === 'curvy' ? [1.14, 1.12] : [1.0, 1.0];
+  root.scale.set(s * buildMul[0], s, s * buildMul[1]); root.updateMatrixWorld(true);
 
   // ---- pomiary ciała w pozie spoczynkowej ----
   const C = { sx: wp('upperarm_l').x, ex: wp('lowerarm_l').x, wx: wp('hand_l').x, armY: wp('upperarm_l').y, neckY: wp('neck_01').y, waistY: wp('spine_01').y, pelvisY: wp('pelvis').y, chestY: wp('spine_03').y };
@@ -392,10 +427,14 @@ async function buildModern(look) {
     if (part === 'feet') {
       if (y < 0.022) return sole;
       if (y < 0.125) return col(shoes);
-      if (look.boots) return y < 0.135 ? shade(shoes, -0.3) : col(shoes);
+      if (look.boots || look.shoeStyle === 'boots') return y < 0.135 ? shade(shoes, -0.3) : col(shoes);
+      if (spec.shorts) return 'skin';
       return legsSkin ? (tights ? col(tights) : y < 0.2 ? col(shoes) : shade(shoes, -0.08)) : col(bottom); // pod spódnicą: wysokie kozaki
     }
-    if (part === 'legs') return legsSkin ? (tights ? col(tights) : 'skin') : col(bottom);
+    if (part === 'legs') {
+      if (spec.shorts) return y > C.pelvisY - 0.28 ? col(bottom) : 'skin';
+      return legsSkin ? (tights ? col(tights) : 'skin') : col(bottom);
+    }
     // ręce (T‑poza: ramię leży wzdłuż osi X)
     if (ax > C.sx + 0.015 && y > C.armY - 0.13) {
       const sc = spec.sleeveInner ? inner : top;
@@ -439,10 +478,38 @@ async function buildModern(look) {
   const hairMv = hairM.clone(); hairMv.map = hairTex().clone(); hairMv.map.rotation = Math.PI / 2; hairMv.map.needsUpdate = true;
   const H = new THREE.Group(); // wszystko na głowie, w układzie świata z pozy spoczynkowej
   const cz = (Fz + Bz) / 2 - 0.005;
-  if (hs === 'ponytail') {
+  if (hs === 'ponytail' || hs === 'ponytail_bangs') {
     const tieY = T - 0.035, tieZ = Bz + 0.03;
     H.add(new THREE.Mesh(taperTube([V(0, tieY, tieZ), V(0, T + 0.005, Bz - 0.035), V(0, T - 0.07, Bz - 0.085), V(0, E - 0.1, Bz - 0.075), V(0.005, E - 0.23, Bz - 0.045)], 0.034, 0.008, 30, 12), hairMv));
     H.add(M(SPH, new THREE.MeshStandardMaterial({ color: ['#e5534b', '#2b2f36', '#f2c14e', '#ec6fb4'][(look.seed || 0) % 4], roughness: 0.6 }), 0, tieY + 0.004, tieZ - 0.012, 0.026, 0.024, 0.02));
+  }
+  if (hs === 'waves') { // fale do ramion (wyraźne falowane pasma z tyłu i po bokach)
+    for (let i = -3; i <= 3; i++) {
+      const x = i * 0.028, side = Math.abs(i) >= 2 ? 0.015 : 0, z0 = Bz + 0.035 + side;
+      H.add(new THREE.Mesh(taperTube([
+        V(x * 0.85, T - 0.02, z0),
+        V(x * 1.15, E - 0.02, z0 - 0.02),
+        V(x * 1.25 + (i % 2 ? 0.014 : -0.014), E - 0.13, z0 - 0.035),
+        V(x * 1.18, E - 0.22, z0 - 0.015),
+      ], 0.032, 0.018, 18, 8), hairMv));
+    }
+  }
+  if (hs === 'afro') { // kręcone afro / loki (kopuła z gęstych loków 3D)
+    const cy = E + 0.065;
+    H.add(M(SPH, hairM, 0, cy, cz - 0.012, W + 0.065, 0.135, 0.14));
+    for (let i = 0; i < 18; i++) {
+      const a = (i / 18) * Math.PI * 2, elev = (i % 3) * 0.045;
+      H.add(M(SPH, hairM, Math.cos(a) * (W + 0.042), cy - 0.02 + elev, cz - 0.01 + Math.sin(a) * 0.095, 0.046, 0.046, 0.046));
+    }
+  }
+  if (hs === 'messy') { // rozczochrane (dynamiczne kosmyki 3D na czubku i bokach)
+    for (let i = 0; i < 11; i++) {
+      const a = (i / 11) * Math.PI * 2;
+      const sx = Math.cos(a) * 0.055, sz = cz + Math.sin(a) * 0.065;
+      const sp = M(SPH, hairM, sx, T - 0.005 + (i % 3) * 0.012, sz, 0.026, 0.055, 0.028);
+      sp.rotation.set(Math.sin(a) * 0.55, 0, -Math.cos(a) * 0.55);
+      H.add(sp);
+    }
   }
   if (hs === 'bun') {
     H.add(M(SPH, hairM, 0, T - 0.045, Bz - 0.015, 0.052, 0.046, 0.044));
@@ -461,7 +528,7 @@ async function buildModern(look) {
     g.computeVertexNormals(); H.add(new THREE.Mesh(g, hairM));
     if (bob) { const fr = M(SPH, hairM, 0.022, T - 0.045, prof(T - 0.05) + 0.004, 0.06, 0.022, 0.026); fr.rotation.z = -0.35; H.add(fr); }
   }
-  if (hs === 'fringe') { // grzywka: wycinek skorupy nad czołem z postrzępionym dolnym brzegiem
+  if (hs === 'fringe' || hs === 'ponytail_bangs') { // grzywka: wycinek skorupy nad czołem z postrzępionym dolnym brzegiem
     const fy = E + 0.004, ry = T - fy + 0.01, rx = W + 0.012, rz = prof(E + 0.05) - cz + 0.016;
     const g = new THREE.SphereGeometry(1, 22, 8, Math.PI / 2 - 1.0, 2.0, 0.18, 0.78), p = g.attributes.position;
     for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), th = Math.acos(Math.max(-1, Math.min(1, y)));
@@ -505,6 +572,15 @@ async function buildModern(look) {
   }
   H.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
   attach('Head', H);
+  // Opcjonalne modularne modele .glb z ./models/characters/ (jeśli obecne, automatycznie dopasowane skalą)
+  if (acc.glasses && acc.glasses !== 'none') {
+    tryLoadCharGlb('glasses.glb').then(sc => {
+      if (!sc) return;
+      const m = sc.clone(true), b = new THREE.Box3().setFromObject(m), sz = b.getSize(new THREE.Vector3());
+      const scf = sz.x > 0.001 ? 0.14 / sz.x : 1; m.scale.setScalar(scf);
+      m.position.set(0, E, eyeZ + 0.025); attach('Head', m);
+    });
+  }
 
   // ---- tułów: kaptur, sznurki, plecak ----
   const front = 0.125 + (fem ? 0.01 : 0), back = fem ? -0.13 : -0.15;

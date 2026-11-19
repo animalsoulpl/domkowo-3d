@@ -488,6 +488,86 @@ export function createHood(scene, opts) {
       default: idle(n);
     }
   }
+  // ---------- Usterka Rzeczywistości: pętla 4 kroków, taniec/chód tyłem, symbole nad głową ----------
+  function makeOverheadTex(icon, glowCol) {
+    const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+    const g = x.createRadialGradient(64, 64, 8, 64, 64, 58);
+    g.addColorStop(0, glowCol); g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+    x.font = '68px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillText(icon, 64, 68);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+  }
+  const UR_OV_TEX = {
+    inverted: makeOverheadTex('💔', 'rgba(180,80,255,0.75)'),
+    spiral:   makeOverheadTex('🌀', 'rgba(110,230,255,0.8)'),
+  };
+  function setUrOverhead(n, kind) {
+    if (n.urMark) { n.root.remove(n.urMark); n.urMark = null; }
+    if (!kind || !UR_OV_TEX[kind]) return;
+    const g = new THREE.Group(); g.position.y = 2.45;
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: UR_OV_TEX[kind], transparent: true, depthTest: false }));
+    sp.scale.set(0.72, 0.72, 1); sp.renderOrder = 7; g.add(sp);
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(0.28, 0.025, 8, 28),
+      new THREE.MeshBasicMaterial({ color: kind === 'inverted' ? '#c86bff' : '#58f0ff', transparent: true, opacity: 0.85 })
+    );
+    ring.rotation.x = Math.PI / 2; g.add(ring);
+    const sparks = [];
+    for (let i = 0; i < 4; i++) {
+      const m = new THREE.Mesh(new THREE.OctahedronGeometry(0.055, 0), new THREE.MeshBasicMaterial({ color: kind === 'inverted' ? '#e58cff' : '#ffd23f' }));
+      g.add(m); sparks.push(m);
+    }
+    g.userData = { sp, ring, sparks, kind };
+    n.root.add(g); n.urMark = g;
+  }
+  function urMarkTick(n, now) {
+    if (!n.urMark) return;
+    const u = n.urMark.userData, t = now / 1000;
+    n.urMark.position.y = 2.42 + Math.sin(t * 2.6 + n.root.id) * 0.08;
+    u.ring.rotation.z = t * 2.4;
+    u.ring.rotation.x = Math.PI / 2 + Math.sin(t * 1.7) * 0.35;
+    u.sp.material.rotation = u.kind === 'inverted' ? Math.PI + Math.sin(t * 2) * 0.25 : -t * 2.5;
+    u.sparks.forEach((m, i) => {
+      const a = t * 2.8 + i * Math.PI / 2;
+      m.position.set(Math.cos(a) * 0.36, Math.sin(t * 3 + i) * 0.14, Math.sin(a) * 0.36);
+      m.rotation.y = t * 4;
+    });
+  }
+  function urStep(n, dt, now, clips) {
+    const u = n.ur; n.inside = false; n.hidden = false; n.root.visible = true;
+    if (u.mode === 'loop') {
+      // 4 kroki w przód (~3.2 m), zatrzymanie, gest + dymek wskazówki, powrót na start pętli
+      const dist = 3.2, sp = 1.25;
+      if (u.phase === 'walk') {
+        u.d += sp * dt;
+        if (u.d >= dist) { u.d = dist; u.phase = 'gesture'; u.t = 2.6; if (u.onCycle) u.onCycle(n.id); }
+      } else if (u.phase === 'gesture') {
+        u.t -= dt;
+        if (u.t <= 0) { u.phase = 'reset'; u.t = 0.25; }
+      } else {
+        u.t -= dt;
+        if (u.t <= 0) { u.d = 0; u.phase = 'walk'; }
+      }
+      n.pos.set(u.ax + u.dx * u.d, 0, u.az + u.dz * u.d);
+      n.face = Math.atan2(u.dx, u.dz);
+      n.root.position.copy(n.pos);
+      n.root.rotation.set(0, n.face, 0);
+      urMarkTick(n, now);
+      if (n.ch) {
+        const st = u.phase === 'walk' ? { pose: 'walk', jog: false, timeScale: 1 } : { pose: 'stand', anim: 'arms', talk: true };
+        animateCharacter(n.ch, st, dt, now / 1000, clips);
+      }
+      return;
+    }
+    if (u.mode === 'dance') {
+      n.root.position.set(n.pos.x, Math.abs(Math.sin(now / 150)) * 0.14, n.pos.z);
+      n.root.rotation.set(0, (now / 450) % (Math.PI * 2), Math.sin(now / 190) * 0.12);
+      urMarkTick(n, now);
+      if (n.ch) animateCharacter(n.ch, { pose: 'stand', anim: 'cheer' }, dt, now / 1000, clips);
+      return;
+    }
+  }
   let lastKeep = {}, isNight = false, fav = new Set(), freeWill = true; const residents = new Set();
   function update(dt, hour, day, simWorld, now) {
     const clips = getClips && getClips();
@@ -499,13 +579,14 @@ export function createHood(scene, opts) {
       if (n.resident) { n.root.visible = false; continue; }
       if (n.override) { const o = n.override; n.root.position.copy(o.pos); n.root.rotation.set(o.rx || 0, o.ry, 0); n.root.visible = true;
         if (n.ch) animateCharacter(n.ch, { pose: o.pose || 'stand', sleep: false }, dt, now / 1000, clips); continue; }
+      if (n.ur && !['meet', 'toMeet', 'toHost', 'visit'].includes(n.state)) { urStep(n, dt, now, clips); continue; } // Usterka Rzeczywistości: pętla / taniec (pauzuje na czas rozmowy z graczem)
       // noc: wszyscy idą do domu
       if (night && !n.inside && !['goingIn', 'meet', 'toMeet', 'toHost', 'errand', 'errandDo', 'watch', 'charge'].includes(n.state)) { n.soc = null; goInside(n); }
       // rozmowa z naszą postacią wygasa, gdy nikt jej nie podtrzymuje
       if ((n.state === 'meet' || n.state === 'toMeet' || n.state === 'toHost') && now - (lastKeep[n.id] || 0) > 2500) { n.hidden = false; idle(n); }
       if (n.route.length) {
         const tgt = n.route[0], dx = tgt.x - n.pos.x, dz = tgt.z - n.pos.z, dist = Math.hypot(dx, dz);
-        const sp = (n.state === 'jog' || n.state === 'jogHome' ? 3.1 : n.state === 'charge' ? 3.4 : n.state === 'toMeet' ? 2.1 : 1.35) * dt;
+        const sp = (n.state === 'jog' || n.state === 'jogHome' ? 3.1 : n.state === 'charge' ? 3.4 : n.state === 'toMeet' ? 2.6 : 1.35) * dt;
         if (dist > 0.01) n.face = Math.atan2(dx, dz);
         if (dist <= sp) { n.pos.copy(tgt); n.route.shift(); if (!n.route.length) arrived(n, hour); }
         else { n.pos.x += dx / dist * sp; n.pos.z += dz / dist * sp; }
@@ -529,6 +610,11 @@ export function createHood(scene, opts) {
       if (n.avoidUntil > now && !n.inside && !['avoid', 'errand', 'errandDo', 'watch', 'goingIn'].includes(n.state)) { const s = toH(simWorld);
         if (s.distanceTo(n.pos) < 5.5) { const dir = n.pos.x >= s.x ? 1 : -1, side = n.pos.z < 19 ? 'N' : 'S'; n.at = null; n.side = side; routeTo(n, { side, x: n.pos.x + dir * 14 }); n.state = 'avoid'; if (opts.npcEvent) opts.npcEvent('avoid', n); } }
       n.root.position.copy(n.pos);
+      // Zamiana Ról: taneczny albo sztywny chód
+      if (n.gait === 'party') { n.root.position.y = Math.abs(Math.sin(now / 170)) * 0.13; n.root.rotation.z = Math.sin(now / 260) * 0.14; n.root.rotation.x = 0; n.gaitWas = true; }
+      else if (n.gait === 'stiff') { n.root.rotation.x = -0.09; n.root.rotation.z = 0; n.gaitWas = true; }
+      else if (n.gaitWas) { n.root.rotation.x = n.root.rotation.z = 0; n.gaitWas = false; }
+      urMarkTick(n, now);
       const tf = n.glitch === 'back' && n.route.length ? n.face + Math.PI : n.face; let d = tf - n.root.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); n.root.rotation.y += d * Math.min(1, dt * 8);
       n.root.visible = !n.inside && !n.hidden;
       if (n.ch && n.root.visible) {
@@ -589,8 +675,8 @@ export function createHood(scene, opts) {
   return {
     group, ready, npcs, setHome, update, pick, setPassers, walkers, get home() { return home; },
     setNight(night) { glowMat.emissiveIntensity = 0.1 + night * 2.2; DET.setNight(night); },
-    available: id => { const n = npcs.find(x => x.id === id); return !!n && !isNight; }, // w dzień wyjdą z domu, gdy ich zawołamy
-    call(id) { const n = npcs.find(x => x.id === id); if (!n) return; lastKeep[id] = performance.now(); if (n.state === 'meet' || n.state === 'toMeet') return; const mp = meetPoint(); routeTo(n, { side: SLOTS[home][0], x: mp.x, exact: mp }); n.state = 'toMeet'; },
+    available: id => { const n = npcs.find(x => x.id === id); return !!n; }, // sąsiedzi dostępni o każdej porze (bez limitu po 22:00)
+    call(id) { const n = npcs.find(x => x.id === id); if (!n) return; lastKeep[id] = performance.now(); n.inside = false; n.hidden = false; if (n.state === 'meet' || n.state === 'toMeet') return; const mp = meetPoint(); if (n.pos.distanceTo(mp) > 6.5) { const dir = n.pos.x >= mp.x ? 1 : -1; n.pos.set(mp.x + dir * 6.0, 0, mp.z); n.at = null; n.side = SLOTS[home][0]; } n.route = [mp.clone()]; n.state = 'toMeet'; },
     keep(id) { lastKeep[id] = performance.now(); },
     setFavourites(ids) { fav = new Set(ids); }, setMarker, clearMarker, setClues, addNeighbour,
     setFreeWill(b) { freeWill = b; },
@@ -601,7 +687,7 @@ export function createHood(scene, opts) {
     npcDef(id) { return npcs.find(x => x.id === id) || NEIGHBOURS.find(x => x.id === id); },
     distWorld(id, w) { const n = npcs.find(x => x.id === id); return n && !n.inside && !n.resident ? toWorld(n.pos).distanceTo(w) : Infinity; },
     // sąsiad wychodzi przed swój dom i czeka na nas
-    host(id) { const n = npcs.find(x => x.id === id); if (!n) return; lastKeep[id] = performance.now(); if (n.state === 'meet' && n.at === n.slot) return; routeTo(n, { slot: n.slot, p: yardPt(n) }); n.state = 'toHost'; },
+    host(id) { const n = npcs.find(x => x.id === id); if (!n) return; lastKeep[id] = performance.now(); n.inside = false; n.hidden = false; if (n.state === 'meet' && n.at === n.slot) return; routeTo(n, { slot: n.slot, p: yardPt(n) }); n.state = 'toHost'; },
     setHidden(id, b) { const n = npcs.find(x => x.id === id); if (n) n.hidden = b; },
     // trasa naszej postaci (w układzie świata) od furtki do sąsiada i z powrotem
     visitRoute(id, back = false) {
@@ -631,6 +717,37 @@ export function createHood(scene, opts) {
     setAvoid(id, untilMs) { const n = npcs.find(x => x.id === id); if (n) n.avoidUntil = untilMs; },
     gateWorld() { return toWorld(L2H(home, EXIT.x + 0.5, 14.6)); },
     // ---------- Usterka Rzeczywistości ----------
+    setLoop(on, onCycle) {
+      for (const n of npcs) {
+        if (n.resident) continue;
+        if (on) {
+          n.inside = false; n.hidden = false; n.route = []; n.soc = null;
+          const p = L2H(n.slot, gateX(n.slot), 15.2);
+          const dir = SLOTS[n.slot][0] === 'N' ? 1 : -1;
+          n.ur = { mode: 'loop', ax: p.x - dir * 1.6, az: p.z, dx: dir, dz: 0, d: Math.random() * 2, phase: 'walk', t: 0, onCycle };
+        } else if (n.ur && n.ur.mode === 'loop') {
+          n.ur = null; n.at = null; n.side = n.pos.z < 19 ? 'N' : 'S'; idle(n);
+        }
+      }
+    },
+    setAbsurd(id, kind) {
+      const n = npcs.find(x => x.id === id); if (!n || n.resident) return;
+      if (!kind) {
+        if (n.ur && n.ur.mode === 'dance') { n.ur = null; n.root.rotation.z = 0; idle(n); }
+        if (n.glitch === 'back') n.glitch = null;
+        setUrOverhead(n, null);
+        return;
+      }
+      n.inside = false; n.hidden = false;
+      setUrOverhead(n, 'spiral');
+      if (kind === 'dance') { n.route = []; n.ur = { mode: 'dance' }; }
+      else { n.ur = null; n.glitch = 'back'; const side = n.pos.z < 19 ? 'N' : 'S'; n.at = null; n.side = side; routeTo(n, { side, x: n.pos.x + (Math.random() < 0.5 ? 16 : -16) }); n.state = 'stroll'; }
+    },
+    setGait(id, gait) { const n = npcs.find(x => x.id === id); if (n) n.gait = gait || null; },
+    setOverhead(id, kind) {
+      if (id === '*') { for (const n of npcs) if (!n.resident) setUrOverhead(n, kind); return; }
+      const n = npcs.find(x => x.id === id); if (n) setUrOverhead(n, kind);
+    },
     addPortal(id, slot, x, z, big = false) { if (portals.has(id)) return; const g = makePortal(id, big); g.position.copy(L2H(slot, x, z)); realG.add(g); portals.set(id, g); },
     removePortal(id) { const g = portals.get(id); if (!g) return; realG.remove(g); portals.delete(id); },
     portalWorld(id) { const g = portals.get(id); return g ? toWorld(g.position) : null; },

@@ -2,7 +2,7 @@
 // Muzyka (dom / praca / budowanie), efekty (UI, monety, fanfary, dymki, kroki…) i otoczenie (ptaki, świerszcze, gwar w pracy).
 
 const SAVE = 'domkowo3d_audio';
-const cfg = Object.assign({ muted: false, music: 0.55, sfx: 0.7 }, JSON.parse(localStorage.getItem(SAVE) || '{}'));
+const cfg = Object.assign({ muted: false, music: 0.55, sfx: 0.7, voiceMode: 'simlish' }, JSON.parse(localStorage.getItem(SAVE) || '{}'));
 let ctx = null, master, musicG, sfxG, ambG, verb, verbG, noiseBuf;
 const save = () => localStorage.setItem(SAVE, JSON.stringify(cfg));
 export const settings = cfg;
@@ -50,49 +50,143 @@ function voice(dest, t, type, f, peak, dur, a = 0.005, send = 0.4, detune = 0) {
   o.start(t); o.stop(t + dur + 0.05); return o;
 }
 const INST = {
-  piano(t, m, v = 1, dur = 2.2) { const f = hz(m), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(3200, t); lp.frequency.exponentialRampToValueAtTime(700, t + dur); lp.connect(musicG);
-    voice(lp, t, 'triangle', f, 0.11 * v, dur, 0.004, 0.45, -4); voice(lp, t, 'sine', f, 0.09 * v, dur * 1.1, 0.004, 0.45, 3); voice(lp, t, 'sine', f * 2, 0.025 * v, dur * 0.4, 0.003, 0.3); },
-  marimba(t, m, v = 1) { const f = hz(m); voice(musicG, t, 'sine', f, 0.16 * v, 0.7, 0.003, 0.35); voice(musicG, t, 'sine', f * 4, 0.035 * v, 0.12, 0.002, 0.2); },
-  pluck(t, m, v = 1) { const f = hz(m), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(4000, t); lp.frequency.exponentialRampToValueAtTime(500, t + 0.3); lp.connect(musicG); voice(lp, t, 'triangle', f, 0.12 * v, 0.45, 0.003, 0.3); voice(lp, t, 'square', f, 0.012 * v, 0.2, 0.003, 0.2); },
-  pad(t, notes, v = 1, dur = 3) { const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1100; lp.connect(musicG); notes.forEach((m, i) => voice(lp, t, 'sine', hz(m), 0.03 * v, dur, 0.4, 0.6, i % 2 ? 6 : -6)); },
-  bass(t, m, v = 1, dur = 0.8) { voice(musicG, t, 'sine', hz(m), 0.16 * v, dur, 0.01, 0.05); voice(musicG, t, 'triangle', hz(m), 0.04 * v, dur * 0.5, 0.01, 0); },
-  hat(t, v = 1) { const s = ctx.createBufferSource(); s.buffer = noiseBuf; const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 7500; const g = ctx.createGain(); env(g, t, 0.002, 0.025 * v, 0.05); s.connect(hp); hp.connect(g); g.connect(musicG); s.start(t, Math.random()); s.stop(t + 0.08); },
+  piano(t, m, v = 1, dur = 1.4) {
+    const f = hz(m), lp = ctx.createBiquadFilter(); lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(4200, t); lp.frequency.exponentialRampToValueAtTime(1100, t + dur); lp.connect(musicG);
+    voice(lp, t, 'triangle', f, 0.12 * v, dur, 0.003, 0.35, -3);
+    voice(lp, t, 'sine', f, 0.1 * v, dur * 1.05, 0.003, 0.35, 3);
+    voice(lp, t, 'sine', f * 2, 0.032 * v, dur * 0.45, 0.002, 0.25);
+  },
+  marimba(t, m, v = 1) {
+    const f = hz(m);
+    voice(musicG, t, 'sine', f, 0.17 * v, 0.48, 0.002, 0.3);
+    voice(musicG, t, 'triangle', f * 4, 0.038 * v, 0.08, 0.001, 0.2);
+  },
+  pizz(t, m, v = 1) { // charakterystyczne dla Simsów pizzicato smyczkowe
+    const f = hz(m), lp = ctx.createBiquadFilter(); lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(2600, t); lp.frequency.exponentialRampToValueAtTime(520, t + 0.24); lp.connect(musicG);
+    voice(lp, t, 'sawtooth', f, 0.065 * v, 0.24, 0.002, 0.28, -5);
+    voice(lp, t, 'triangle', f, 0.11 * v, 0.28, 0.002, 0.28, 4);
+  },
+  glock(t, m, v = 1) { // jasny dzwoneczek / ksylofon w górnym rejestrze
+    const f = hz(m);
+    voice(musicG, t, 'sine', f, 0.095 * v, 0.75, 0.002, 0.45);
+    voice(musicG, t, 'sine', f * 2.756, 0.022 * v, 0.18, 0.001, 0.3);
+  },
+  pluck(t, m, v = 1) {
+    const f = hz(m), lp = ctx.createBiquadFilter(); lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(3800, t); lp.frequency.exponentialRampToValueAtTime(600, t + 0.28); lp.connect(musicG);
+    voice(lp, t, 'triangle', f, 0.12 * v, 0.4, 0.003, 0.28);
+    voice(lp, t, 'square', f, 0.014 * v, 0.16, 0.002, 0.18);
+  },
+  pad(t, notes, v = 1, dur = 2.4) {
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1350; lp.connect(musicG);
+    notes.forEach((m, i) => voice(lp, t, 'sine', hz(m), 0.024 * v, dur, 0.22, 0.5, i % 2 ? 5 : -5));
+  },
+  bass(t, m, v = 1, dur = 0.42) { // sprężysty kontrabas (upright bass)
+    const f = hz(m), lp = ctx.createBiquadFilter(); lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(900, t); lp.frequency.exponentialRampToValueAtTime(260, t + dur); lp.connect(musicG);
+    voice(lp, t, 'triangle', f, 0.18 * v, dur, 0.006, 0.06);
+    voice(lp, t, 'sine', f, 0.14 * v, dur * 1.1, 0.006, 0.04);
+  },
+  kick(t, v = 1) {
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine';
+    o.frequency.setValueAtTime(125, t); o.frequency.exponentialRampToValueAtTime(48, t + 0.09);
+    env(g, t, 0.003, 0.13 * v, 0.11); o.connect(g); g.connect(musicG); o.start(t); o.stop(t + 0.14);
+  },
+  hat(t, v = 1) { // lekki shaker / miotełka
+    const s = ctx.createBufferSource(); s.buffer = noiseBuf;
+    const hp = ctx.createBiquadFilter(); hp.type = 'bandpass'; hp.frequency.value = 6800; hp.Q.value = 1.2;
+    const g = ctx.createGain(); env(g, t, 0.003, 0.022 * v, 0.055);
+    s.connect(hp); hp.connect(g); g.connect(musicG); s.start(t, Math.random()); s.stop(t + 0.08);
+  },
 };
 
-// ---------- muzyka ----------
-// akordy jako nuty MIDI; sc – skala melodii
+// ---------- muzyka w stylu The Sims (pogodny fortepian, pizzicato, marimba, motywy melodyczne) ----------
+// prog: 4-taktowe progresje (Cmaj7/add9/Dm9/G13), motifs: chwytliwe 8-ósemkowe motywy (indeks w skali lub -1 = pauza)
 const MOODS = {
-  home: { bpm: 74, inst: 'piano', swing: 0.04, melody: 0.32, hats: false,
-    prog: [[53, 57, 60, 64], [50, 57, 60, 64], [46, 53, 57, 62], [48, 55, 58, 62]], sc: [65, 67, 69, 72, 74, 76, 77, 79],
-    arp: [0, -1, 2, -1, 1, -1, 3, 2] },
-  build: { bpm: 96, inst: 'marimba', swing: 0.06, melody: 0.4, hats: false,
-    prog: [[48, 55, 59, 62], [45, 52, 55, 60], [41, 53, 57, 64], [43, 55, 59, 62]], sc: [72, 74, 76, 79, 81, 84, 86],
-    arp: [0, 2, 1, 3, 2, 1, 3, 2] },
-  lounge: { bpm: 92, inst: 'piano', swing: 0.08, melody: 0.38, hats: true,
-    prog: [[53, 57, 60, 64], [52, 55, 59, 62], [50, 53, 57, 60], [48, 52, 55, 59]], sc: [69, 71, 72, 74, 76, 77, 79, 81],
-    arp: [0, 2, 1, 3, 0, 2, 3, 1] },
-  waltz: { bpm: 168, inst: 'piano', swing: 0, melody: 0.45, hats: false,
-    prog: [[48, 55, 60, 64], [45, 52, 57, 60], [41, 53, 57, 60], [43, 50, 55, 59]], sc: [67, 69, 71, 72, 74, 76, 77, 79],
-    arp: [0, -1, 2, 3, -1, 2, 1, 3] },
-  yacht: { bpm: 122, inst: 'pluck', swing: 0, melody: 0.3, hats: true,
-    prog: [[45, 52, 57, 60], [41, 48, 53, 57], [48, 55, 60, 64], [43, 50, 55, 62]], sc: [69, 72, 74, 76, 79, 81, 84],
-    arp: [0, 2, 1, 2, 3, 2, 1, 2] },
-  work: { bpm: 108, inst: 'pluck', swing: 0, melody: 0.26, hats: true,
-    prog: [[45, 52, 55, 60], [41, 52, 57, 60], [48, 52, 55, 59], [43, 50, 55, 59]], sc: [69, 71, 72, 74, 76, 79, 81],
-    arp: [0, 1, 2, 1, 3, 1, 2, 1] },
+  home: { // słoneczne przedmieście – The Sims Live / Neighborhood (pogodne pianino + pizzicato + dzwoneczki)
+    bpm: 114, inst: 'piano', acc: 'pizz', lead: 'glock', swing: 0.035, hats: true, kick: true,
+    prog: [[48, 55, 59, 62, 64], [45, 52, 55, 60, 64], [50, 53, 57, 60, 64], [43, 50, 55, 59, 62]], // Cmaj9 → Am7 → Dm9 → G6
+    sc: [67, 69, 71, 72, 74, 76, 79, 81, 83, 84],
+    arp: [0, 2, -1, 3, 1, -1, 4, 2],
+    motifs: [
+      [3, -1, 5, 6, -1, 5, 4, 3],
+      [6, -1, 5, 3, 4, -1, 2, -1],
+      [3, 4, 5, -1, 7, 6, 5, 4],
+      [5, -1, 3, 2, 3, -1, 6, -1],
+    ],
+  },
+  build: { // tryb Kupuj / Buduj – skoczna marimba + pizzicato jak w The Sims Build/Buy!
+    bpm: 120, inst: 'marimba', acc: 'pizz', lead: 'piano', swing: 0.04, hats: true, kick: true,
+    prog: [[53, 57, 60, 64, 67], [52, 55, 59, 62, 67], [50, 53, 57, 60, 64], [48, 52, 55, 59, 62]], // Fmaj9 → Em7 → Dm9 → Cmaj9
+    sc: [69, 71, 72, 74, 76, 77, 79, 81, 84, 86],
+    arp: [0, 3, 1, 4, 2, 3, 1, 2],
+    motifs: [
+      [2, 4, -1, 6, 4, 3, 2, -1],
+      [6, -1, 7, 6, 4, -1, 2, 3],
+      [4, 6, 8, -1, 7, 6, 4, 2],
+      [3, -1, 4, 6, -1, 4, 2, -1],
+    ],
+  },
+  lounge: { bpm: 100, inst: 'piano', acc: 'pizz', lead: 'glock', swing: 0.055, hats: true, kick: false,
+    prog: [[53, 57, 60, 64], [52, 55, 59, 62], [50, 53, 57, 60], [48, 52, 55, 59]],
+    sc: [69, 71, 72, 74, 76, 77, 79, 81],
+    arp: [0, 2, -1, 3, 1, 2, -1, 3],
+    motifs: [[2, -1, 4, 5, -1, 4, 2, -1], [5, -1, 4, 2, 1, -1, 2, -1]] },
+  waltz: { bpm: 162, inst: 'piano', acc: 'pizz', lead: 'glock', swing: 0, hats: false, kick: false,
+    prog: [[48, 55, 60, 64], [45, 52, 57, 60], [41, 53, 57, 60], [43, 50, 55, 59]],
+    sc: [67, 69, 71, 72, 74, 76, 77, 79],
+    arp: [0, -1, 2, 3, -1, 2, 1, 3],
+    motifs: [[3, -1, 5, 4, -1, 3, 2, -1], [5, -1, 7, 6, -1, 5, 3, -1]] },
+  yacht: { bpm: 122, inst: 'pluck', acc: 'marimba', lead: 'glock', swing: 0.02, hats: true, kick: true,
+    prog: [[45, 52, 57, 60], [41, 48, 53, 57], [48, 55, 60, 64], [43, 50, 55, 62]],
+    sc: [69, 72, 74, 76, 79, 81, 84],
+    arp: [0, 2, 1, 2, 3, 2, 1, 2],
+    motifs: [[0, -1, 2, 3, -1, 4, 3, 2], [4, -1, 3, 2, 0, -1, 2, -1]] },
+  work: { bpm: 116, inst: 'pluck', acc: 'pizz', lead: 'marimba', swing: 0.025, hats: true, kick: true,
+    prog: [[45, 52, 55, 60], [41, 52, 57, 60], [48, 52, 55, 59], [43, 50, 55, 59]],
+    sc: [69, 71, 72, 74, 76, 79, 81],
+    arp: [0, 1, 2, -1, 3, 1, 2, -1],
+    motifs: [[0, 2, -1, 4, 3, 2, 0, -1], [4, -1, 5, 4, 2, -1, 0, -1]] },
 };
-let mood = 'home', want = 'home', nextT = 0, step = 0, bar = 0, lastMel = 72;
+let mood = 'home', want = 'home', nextT = 0, step = 0, bar = 0;
 export function setMode(m) { if (MOODS[m]) want = m; }
 function scheduleStep(t) {
   const M = MOODS[mood], s = step % 8, chord = M.prog[bar % M.prog.length];
-  if (s === 0) { INST.bass(t, chord[0] - 12, 1, 60 / M.bpm * 3.5); INST.pad(t, chord.slice(1), 1, 60 / M.bpm * 4.2); }
-  if ((mood === 'work' || mood === 'yacht') && (s === 4)) INST.bass(t, chord[0] - 12, 0.7, 0.4); if (mood === 'yacht' && s % 2 === 0) INST.bass(t, chord[0] - 24, 0.5, 0.18);
-  const ai = M.arp[s]; if (ai >= 0) { const n = chord[ai % chord.length] + (ai >= chord.length ? 12 : 0) + 12; INST[M.inst](t, n, s === 0 ? 0.9 : 0.6 + Math.random() * 0.2, mood === 'home' ? 2.4 : undefined); }
-  if (M.hats && s % 2 === 1) INST.hat(t, s === 3 || s === 7 ? 1 : 0.6);
-  if (Math.random() < M.melody && s % 2 === 0) { // melodia – spacer po skali, najchętniej po dźwiękach akordu
-    const sc = M.sc; let i = sc.indexOf(lastMel); if (i < 0) i = Math.floor(sc.length / 2);
-    i = Math.max(0, Math.min(sc.length - 1, i + [-2, -1, -1, 1, 1, 2, 0][Math.floor(Math.random() * 7)])); lastMel = sc[i];
-    INST[M.inst === 'pluck' ? 'marimba' : M.inst](t + 0.01, lastMel, 0.55, 1.6);
+  const root = chord[0] - 12, fifth = root + 7;
+  // Skoczny bas w stylu Simsów (raz-i-dwa-i…) + ciepły pad na początku taktu
+  if (s === 0) { INST.bass(t, root, 0.95, 0.45); INST.pad(t, chord.slice(1, 4), 0.7, 60 / M.bpm * 3.8); }
+  else if (s === 3) INST.bass(t, fifth, 0.62, 0.28);
+  else if (s === 4) INST.bass(t, root + 12, 0.72, 0.34);
+  else if (s === 7 && bar % 2 === 1) INST.bass(t, fifth, 0.55, 0.22);
+
+  // Lekki rytm (miotełka/shaker + miękka stopa)
+  if (M.kick && (s === 0 || s === 4)) INST.kick(t, s === 0 ? 0.7 : 0.45);
+  if (M.hats) INST.hat(t, s % 2 === 1 ? 0.85 : 0.35);
+
+  // Akompaniament akordowy + pizzicato na off-beatach ("um-pa-um-pa" jak w The Sims!)
+  const ai = M.arp[s];
+  if (ai >= 0) {
+    const n = chord[ai % chord.length] + 12;
+    INST[M.inst](t, n, s === 0 ? 0.85 : 0.62, 0.95);
+  }
+  if (M.acc && (s === 2 || s === 6)) {
+    // krótkie staccato pizzicato dwudźwiękiem
+    INST[M.acc](t, chord[1] + 12, 0.62);
+    INST[M.acc](t, chord[2] + 12, 0.52);
+  }
+
+  // Chwytliwy motyw melodyczny (zmienia się co 4 takty, z delikatną wariacją)
+  if (M.motifs && M.motifs.length) {
+    const phrase = Math.floor(bar / 4) % 2; // fraza A / B
+    const motif = M.motifs[(bar + phrase) % M.motifs.length];
+    const mi = motif[s];
+    if (mi >= 0 && mi < M.sc.length) {
+      const note = M.sc[mi] + (bar % 8 === 7 && s >= 6 ? 2 : 0);
+      const leadInst = (bar % 8 < 4) ? M.inst : (M.lead || 'glock');
+      INST[leadInst](t + 0.008, note, leadInst === 'glock' ? 0.58 : 0.68, 0.85);
+    }
   }
 }
 function tick() {
@@ -138,6 +232,12 @@ const SFX = {
   splash(t) { noise(t, 0.6, 900, 'bandpass', 0.12, sfxG, 0.8); },
   doorbell(t) { bell(t, 659, 0.13, 1.4); bell(t + 0.42, 523, 0.13, 1.9); },
   door(t) { sweep(t, 220, 110, 0.25, 0.08, 'triangle'); noise(t, 0.2, 400, 'lowpass', 0.06); },
+  rewind(t) { sweep(t, 1200, 180, 0.26, 0.11, 'sawtooth', sfxG, 0.2); sweep(t + 0.14, 980, 260, 0.22, 0.09, 'triangle', sfxG, 0.2); noise(t, 0.34, 2400, 'bandpass', 0.06, sfxG, 3); },
+  swish(t) {
+    noise(t, 0.26, 1900, 'bandpass', 0.075, sfxG, 2.2);
+    sweep(t, 320, 1180, 0.24, 0.07, 'sine', sfxG, 0.1);
+    [76, 80, 83, 88].forEach((m, i) => bell(t + 0.07 + i * 0.055, hz(m), 0.065, 0.42));
+  },
 };
 let lastPlay = {};
 export function play(name) {
@@ -175,4 +275,159 @@ export function setRain(level) {
   if (!ctx) return;
   if (!rainNode && level > 0) { const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true; const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 0.4; const g = ctx.createGain(); g.gain.value = 0; src.connect(f); f.connect(g); g.connect(ambG); src.start(); rainNode = { src, g }; }
   if (rainNode) { rainNode.g.gain.setTargetAtTime(level * 0.09, ctx.currentTime, 0.8); if (level <= 0) { const r = rainNode; rainNode = null; setTimeout(() => { try { r.src.stop(); } catch (e) {} }, 3000); } }
+}
+
+// ---------- system głosów: Simlish (Web Audio API) + Polski Lektor (speechSynthesis) ----------
+let activeVoiceG = null, lastVoiceAt = 0, lastAmbientVoiceAt = 0, voiceEndAt = 0;
+export function getVoiceMode() { return cfg.voiceMode || 'simlish'; }
+export function setVoiceMode(m) {
+  if (!['simlish', 'pl', 'off'].includes(m)) return;
+  cfg.voiceMode = m; save(); stopVoice();
+}
+export function stopVoice() {
+  if (typeof speechSynthesis !== 'undefined') try { speechSynthesis.cancel(); } catch (e) {}
+  if (activeVoiceG && ctx) {
+    try { activeVoiceG.gain.cancelScheduledValues(ctx.currentTime); activeVoiceG.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.025); } catch (e) {}
+    activeVoiceG = null;
+  }
+}
+function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; }
+function cleanSpeechText(raw) {
+  return String(raw || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '')
+    .replace(/\s+/g, ' ').trim();
+}
+function pickPolishVoice(gender) {
+  if (typeof speechSynthesis === 'undefined') return null;
+  const list = speechSynthesis.getVoices().filter(v => /^pl/i.test(v.lang));
+  if (!list.length) return null;
+  const femHint = /zosia|paulina|ewa|maja|kasia|female|anna/i;
+  const maleHint = /krzysztof|marek|adam|male/i;
+  return list.find(v => gender === 'f' ? femHint.test(v.name) : maleHint.test(v.name)) || list[0];
+}
+
+export function playCharacterVoice(speakerName, gender, text, emotion = 'neutral', opts = {}) {
+  const mode = getVoiceMode();
+  if (mode === 'off' || cfg.muted) return;
+  const clean = cleanSpeechText(text);
+  if (!clean) return;
+  const now = performance.now();
+  // Ochrona anty-spamowa (1.5 s dla dymków w tle na ulicy) i ochrona przed nakładaniem
+  if (opts.ambient) {
+    if (now - lastAmbientVoiceAt < 1500) return;
+    if (now < voiceEndAt) return;
+    lastAmbientVoiceAt = now;
+  } else {
+    if (now - lastVoiceAt < 120) return;
+    lastVoiceAt = now;
+  }
+  const name = String(speakerName || '');
+  const isKurator = /kurator/i.test(name);
+  const isAnia = /^ania$/i.test(name);
+  const isBartek = /^bartek$/i.test(name);
+  const isQuestion = /\?\s*$/.test(clean);
+  const isAngry = emotion === 'angry' || emotion === 'storm' || emotion === 'neg';
+  const isLove = emotion === 'love' || emotion === 'romance' || emotion === 'flirt';
+
+  // --- Tryb Polski Lektor (window.speechSynthesis) ---
+  if (mode === 'pl') {
+    if (typeof speechSynthesis === 'undefined' || typeof SpeechSynthesisUtterance === 'undefined') return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(clean.slice(0, 260));
+      u.lang = 'pl-PL';
+      const v = pickPolishVoice(gender); if (v) u.voice = v;
+      const h = (hashStr(name || 'sim') - 0.5) * 0.14;
+      let pitch = isKurator ? 0.72 : isAnia ? 1.15 : isBartek ? 0.85 : (gender === 'f' ? 1.15 + h : 0.85 + h);
+      if (isAngry) pitch -= 0.08;
+      else if (isLove) pitch += 0.05;
+      u.pitch = Math.max(0.5, Math.min(1.6, pitch));
+      u.rate = isKurator ? 0.92 : isAngry ? 1.16 : isLove ? 0.94 : 1.04;
+      u.volume = Math.max(0.15, Math.min(1, cfg.sfx * 1.1));
+      voiceEndAt = now + Math.min(4500, Math.max(900, clean.length * 55));
+      speechSynthesis.speak(u);
+    } catch (e) {}
+    return;
+  }
+
+  // --- Tryb Simlish (Web Audio API) ---
+  if (!ctx) return;
+  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+  stopVoice();
+  const t0 = ctx.currentTime + 0.015;
+  const vg = ctx.createGain();
+  vg.gain.setValueAtTime(1, t0);
+  vg.connect(sfxG);
+  activeVoiceG = vg;
+
+  // Barwa bazowa postaci
+  const h = hashStr(name || 'sim');
+  let baseF = isKurator ? 98 : isAnia ? (238 + h * 24) : isBartek ? (132 + h * 18)
+    : (gender === 'f' ? 215 + h * 70 : 118 + h * 54);
+  if (isAngry) baseF *= 0.91;
+  else if (isLove) baseF *= 1.04;
+
+  // Długość serii sylab dopasowana do długości zdania (maks. 1.2–1.8 s)
+  const sylCount = Math.max(3, Math.min(9, Math.round(clean.length / 7)));
+  const stepBase = isAngry ? 0.115 : isLove ? 0.185 : isKurator ? 0.19 : 0.145;
+  const maxDur = isLove ? 1.75 : isAngry ? 1.25 : 1.55;
+  const step = Math.min(stepBase, maxDur / sylCount);
+  const totalDur = sylCount * step;
+  voiceEndAt = now + totalDur * 1000 + 80;
+
+  // Filtr dolnoprzepustowy dla miękkiego, przyjemnego brzmienia bez piszczenia
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(isKurator ? 920 : isAngry ? 1750 : isLove ? 1250 : (gender === 'f' ? 1550 : 1100), t0);
+  lp.Q.value = isKurator ? 2.2 : 0.9;
+  lp.connect(vg);
+
+  // Dla Kuratora: delikatne echo + mocny pogłos
+  if (isKurator && verb) {
+    const del = ctx.createDelay(0.5); del.delayTime.value = 0.14;
+    const fb = ctx.createGain(); fb.gain.value = 0.34;
+    const wet = ctx.createGain(); wet.gain.value = 0.55;
+    lp.connect(del); del.connect(fb); fb.connect(del); del.connect(wet); wet.connect(vg);
+    const rv = ctx.createGain(); rv.gain.value = 0.78; lp.connect(rv); rv.connect(verb);
+  } else if (verb) {
+    const rv = ctx.createGain(); rv.gain.value = isLove ? 0.36 : 0.18; lp.connect(rv); rv.connect(verb);
+  }
+
+  // Deterministyczny wzór melodii z treści wypowiedzi
+  const seed0 = Math.floor(hashStr(clean) * 1000);
+  const scale = isLove ? [0, 2, 4, 7, 9] : isAngry ? [0, 1, 3, 5, 7] : isKurator ? [0, 3, 5, 7, 10] : [0, 2, 4, 5, 7, 9];
+  for (let i = 0; i < sylCount; i++) {
+    const ts = t0 + i * step;
+    const dur = step * (isLove ? 0.92 : isAngry ? 0.76 : 0.84);
+    const semi = scale[(seed0 + i * 3 + (clean.charCodeAt(i % clean.length) || 0)) % scale.length];
+    let f = baseF * Math.pow(2, (semi - 2) / 12);
+    // Intonacja pytająca: podnieś ton ostatnich sylab w górę
+    if (isQuestion && i >= sylCount - 2) f *= (i === sylCount - 1 ? 1.28 : 1.12);
+    else if (!isQuestion && i === sylCount - 1) f *= 0.93;
+
+    const o1 = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain();
+    o1.type = isKurator ? 'sawtooth' : 'triangle';
+    o2.type = 'sine';
+    o1.frequency.setValueAtTime(f * (isLove ? 0.96 : 1.0), ts);
+    o2.frequency.setValueAtTime(f * (isKurator ? 0.5 : 2.0), ts);
+    if (isLove) {
+      o1.frequency.exponentialRampToValueAtTime(f * 1.08, ts + dur * 0.75);
+      o2.frequency.exponentialRampToValueAtTime(f * 2.16, ts + dur * 0.75);
+    } else if (isQuestion && i === sylCount - 1) {
+      o1.frequency.exponentialRampToValueAtTime(f * 1.18, ts + dur);
+    } else {
+      o1.frequency.exponentialRampToValueAtTime(f * (0.94 + (i % 2) * 0.1), ts + dur);
+    }
+
+    const peak = (isKurator ? 0.11 : isAngry ? 0.16 : 0.13) * (opts.ambient ? 0.7 : 1.0);
+    g.gain.setValueAtTime(0.0001, ts);
+    g.gain.linearRampToValueAtTime(peak, ts + Math.min(0.025, dur * 0.25));
+    g.gain.exponentialRampToValueAtTime(0.0001, ts + dur);
+
+    const g2 = ctx.createGain(); g2.gain.value = isKurator ? 0.35 : 0.18;
+    o1.connect(g); o2.connect(g2); g2.connect(g); g.connect(lp);
+    o1.start(ts); o2.start(ts);
+    o1.stop(ts + dur + 0.03); o2.stop(ts + dur + 0.03);
+  }
 }

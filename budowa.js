@@ -179,8 +179,8 @@ const COTTAGE_OBJS = [
   ['fridge', 7, 4], ['stove', 8, 4], ['counter', 9, 4], ['table', 7, 7],
   // mały salon: kominek, dywan, kanapa, lampa, regał, telefon, roślina
   ['fireplace', 2, 6], ['rug', 2, 7], ['sofa', 2, 9, 2], ['lamp', 4, 9], ['books', 5, 6], ['phone', 9, 6], ['plant', 9, 9],
-  // przytulna sypialnia
-  ['bed', 11, 4], ['lamp', 10, 4], ['plant', 13, 4], ['rug', 11, 6], ['guitar', 13, 7], ['easel', 12, 9, 2], ['books', 13, 9, 2],
+  // przytulna sypialnia (z dwudrzwiową szafą do Garderoby 3D)
+  ['bed', 11, 4], ['lamp', 10, 4], ['plant', 13, 4], ['rug', 11, 6], ['guitar', 13, 7], ['wardrobe', 10, 9, 2], ['easel', 12, 9, 2], ['books', 13, 9, 2],
 ];
 
 // 2) Szklany Pawilon Modernistyczny – asymetryczna bryła z płaskim dachem, przeszklenia od podłogi do sufitu, beton i czarna stal
@@ -205,8 +205,8 @@ const PAVILION_OBJS = [
   ['tvWall', 2, 8], ['rugLiving', 2, 9], ['sectional', 2, 10, 2], ['arcLamp', 5, 8],
   // jadalnia
   ['diningTable', 8, 9], ['chandelier', 8, 9], ['monsteraGold', 11, 11],
-  // sypialnia z widokiem na łazienkę za szkłem
-  ['luxBed', 13, 2], ['ficus', 12, 2], ['arcLamp', 17, 2], ['vanity', 16, 5, 2],
+  // sypialnia z widokiem na łazienkę za szkłem (z szafą do Garderoby 3D)
+  ['luxBed', 13, 2], ['ficus', 12, 2], ['arcLamp', 17, 2], ['wardrobe', 13, 5, 2], ['vanity', 16, 5, 2],
   // szklana łazienka
   ['walkShower', 14, 6], ['toilet', 15, 6], ['ovalBath', 16, 6],
   // taras z jacuzzi
@@ -237,10 +237,10 @@ const CLASSIC_OBJS = [
   ['rugDining', 2, 6], ['diningLong', 2, 6], ['chandelier', 3, 6], ['books', 5, 6], ['plant', 2, 9],
   // salon z kominkiem i pianinem
   ['fireplace', 13, 6], ['rug', 13, 7], ['sofa', 13, 9, 2], ['grandPiano', 16, 8, 2], ['books', 12, 9, 2], ['lamp', 15, 9], ['lamp', 10, 7],
-  // sypialnia 1
-  ['bed', 11, 2], ['lamp', 10, 2], ['plant', 13, 2], ['vanity', 12, 5, 2],
+  // sypialnia 1 (z szafą do Garderoby 3D)
+  ['bed', 11, 2], ['lamp', 10, 2], ['plant', 13, 2], ['wardrobe', 10, 5, 2], ['vanity', 12, 5, 2],
   // sypialnia 2
-  ['bed', 15, 2], ['lamp', 14, 2], ['plant', 17, 2], ['desk', 14, 5, 2],
+  ['bed', 15, 2], ['lamp', 14, 2], ['plant', 17, 2], ['desk', 14, 5, 2], ['wardrobe', 16, 5, 2],
 ];
 
 // 4) Willa Beverly Hills – rozłożysta willa w kształcie litery U, jasny tynk, łukowa kolumnada, taras i basen
@@ -262,8 +262,8 @@ const BEVERLY_OBJS = [
   ['luxKitchen', 0, 2], ['luxFridge', 3, 2], ['upperCabinets', 0, 2], ['kitchenIsland', 1, 4, 2], ['homeBar', 4, 7, 2], ['monsteraGold', 0, 7],
   // wielki salon: kominek z TV, fortepian koncertowy, ogromny narożnik
   ['tvWall', 8, 2], ['grandPiano', 11, 2], ['statue', 13, 2], ['palmPot', 6, 2], ['rugLiving', 8, 3], ['glassTable', 9, 4], ['sectional', 8, 5, 2], ['arcLamp', 12, 5], ['chandelier', 10, 4],
-  // apartament główny: łóżko, otwarta garderoba, toaletka
-  ['rugBed', 15, 3], ['luxBed', 15, 2], ['ficus', 14, 2], ['monsteraGold', 19, 2], ['closet', 15, 7, 2], ['vanity', 18, 5, 2],
+  // apartament główny: łóżko, szafa, otwarta garderoba, toaletka
+  ['rugBed', 15, 3], ['luxBed', 15, 2], ['ficus', 14, 2], ['wardrobe', 17, 2], ['monsteraGold', 19, 2], ['closet', 15, 7, 2], ['vanity', 18, 5, 2],
   // łazienka SPA z wolnostojącą wanną
   ['doubleSink', 16, 8], ['ovalBath', 17, 10, 2], ['walkShower', 16, 11, 2], ['toilet', 19, 11, 2], ['monsteraGold', 19, 8],
   // prywatny gabinet

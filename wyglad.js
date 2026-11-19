@@ -8,16 +8,60 @@ export function rng(seed) {
 export function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 
 export const SKIN_TONES = ['#f7dcc8', '#f0c9aa', '#e8b894', '#d9a27c', '#c58c64', '#a8714c', '#8a5a3c', '#62402b'];
+export const BODY_BUILDS = [['slim', 'Szczupła'], ['athletic', 'Wysportowana'], ['curvy', 'Pełniejsza']];
 export const HAIR_COLORS = {
   blond: ['#e9cd7e', '#d8b261', '#f0dca0'], braz: ['#6b4428', '#8a5a33', '#4f3320'], czarne: ['#1d1510', '#2b211c'],
   rude: ['#b5562f', '#c9672e', '#8f3a22'], siwe: ['#bdb8b0', '#dcd6cc', '#9c9890'],
 };
-export const HAIR_SWATCHES = ['#f0dca0', '#e9cd7e', '#d8b261', '#8a5a33', '#6b4428', '#4f3320', '#2b211c', '#1d1510', '#c9672e', '#b5562f', '#8f3a22', '#dcd6cc', '#9c9890'];
+export const HAIR_SWATCHES = ['#f0dca0', '#e9cd7e', '#d8b261', '#8a5a33', '#6b4428', '#4f3320', '#2b211c', '#1d1510', '#c9672e', '#b5562f', '#8f3a22', '#dcd6cc', '#7b4bd6', '#e86f9a'];
 export const EYE_COLORS = ['#5a3a22', '#3f2a1a', '#4f7fae', '#5e8c5a', '#7a6a4a', '#2e2a26'];
+export const LIP_COLORS = [null, '#c4505a', '#d46a6a', '#b84a6a', '#c97a6e', '#a33a3a', '#e86f9a'];
 
-export const HAIR_F = [['long', 'Długie rozpuszczone'], ['ponytail', 'Wysoki kucyk'], ['bun', 'Elegancki kok'], ['bob', 'Bob do ramion'], ['pixie', 'Krótkie (pixie)'], ['buns', 'Dwa koczki']];
-export const HAIR_M = [['fringe', 'Krótkie z grzywką'], ['wavy', 'Dłuższe falowane'], ['parted', 'Z przedziałkiem'], ['buzz', 'Na jeża'], ['bald', 'Łysy']];
+export const HAIRSTYLES_ALL = [
+  ['long', 'Długie proste'],
+  ['waves', 'Fale do ramion'],
+  ['ponytail', 'Wysoki kucyk'],
+  ['bun', 'Kok na czubku'],
+  ['bob', 'Krótki bob'],
+  ['afro', 'Kręcone afro / loki'],
+  ['parted', 'Krótkie z przedziałkiem'],
+  ['messy', 'Rozczochrane'],
+  ['ponytail_bangs', 'Kucyk z grzywką'],
+  ['buzz', 'Buzzcut / na jeża'],
+  ['bald', 'Łysina'],
+];
+export const HAIR_F = [['long', 'Długie proste'], ['waves', 'Fale do ramion'], ['ponytail', 'Wysoki kucyk'], ['bun', 'Kok na czubku'], ['bob', 'Krótki bob'], ['afro', 'Kręcone afro'], ['ponytail_bangs', 'Kucyk z grzywką'], ['pixie', 'Krótkie (pixie)'], ['buns', 'Dwa koczki']];
+export const HAIR_M = [['parted', 'Z przedziałkiem'], ['fringe', 'Krótkie z grzywką'], ['messy', 'Rozczochrane'], ['wavy', 'Dłuższe falowane'], ['afro', 'Kręcone afro'], ['buzz', 'Buzzcut / na jeża'], ['bald', 'Łysina']];
 export const BEARDS = [['none', 'Brak'], ['stubble', 'Zarost'], ['full', 'Pełna broda'], ['mustache', 'Wąsy'], ['goatee', 'Kozia bródka']];
+export const TOP_STYLES = [
+  ['tee', 'T-shirt'],
+  ['blazer', 'Marynarka / Żakiet'],
+  ['sweater', 'Sweter oversize'],
+  ['hoodie', 'Bluza z kapturem'],
+  ['tank', 'Top na ramiączkach'],
+  ['shirt', 'Koszula z kołnierzykiem'],
+];
+export const BOTTOM_STYLES = [
+  ['jeans', 'Dżinsy'],
+  ['skirt', 'Spódnica rozkloszowana'],
+  ['gown', 'Suknia wieczorowa (długa)'],
+  ['shorts', 'Szorty'],
+  ['slacks', 'Spodnie garniturowe'],
+  ['joggers', 'Dresy'],
+];
+export const SHOE_STYLES = [
+  ['sneakers', 'Sneakersy'],
+  ['heels', 'Szpilki / Półbuty'],
+  ['boots', 'Botki'],
+  ['slippers', 'Kapcie'],
+];
+export const OUTFIT_CATS = [
+  ['everyday', '☀️', 'Codzienny'],
+  ['formal', '✨', 'Wizytowy'],
+  ['sleepwear', '🌙', 'Piżama'],
+  ['athletic', '🏃‍♀️', 'Sportowy'],
+];
+export const CLOTH_SWATCHES = ['#e5534b', '#2f6fe4', '#39a06a', '#f2c14e', '#ec6fb4', '#7b4bd6', '#f4f4f4', '#2b2f36', '#8fd0f0', '#f08a4b', '#1f3a5f', '#8a2e3b', '#c9b48a', '#5b7f6a'];
 export const OUTFIT_F = [['dress_flare', 'Rozkloszowana sukienka'], ['dress_fit', 'Dopasowana sukienka'], ['skirt_blouse', 'Spódnica i bluzka'], ['pants_blazer', 'Spodnie i marynarka'], ['sweater', 'Luźny sweter'], ['hoodie', 'Bluza z kapturem'], ['tee', 'T-shirt i jeansy']];
 export const OUTFIT_M = [['shirt_rolled', 'Koszula, podwinięte rękawy'], ['hoodie', 'Bluza z kapturem'], ['blazer', 'Marynarka casual'], ['tee_jacket', 'T-shirt i kurtka'], ['vest', 'Koszula i kamizelka'], ['tee', 'T-shirt'], ['sweater', 'Sweter']];
 export const GLASSES = [['none', 'Brak'], ['round', 'Okrągłe'], ['square', 'Prostokątne'], ['sun', 'Przeciwsłoneczne']];
@@ -88,6 +132,94 @@ export function generateLook(seed, opts = {}) {
 /** Krótki opis wyglądu, np. do dymka. */
 export function describeLook(L) {
   const lab = (list, k) => (list.find(x => x[0] === k) || [, ''])[1];
-  const f = L.body === 'f';
-  return [lab(f ? HAIR_F : HAIR_M, L.hairStyle), lab(f ? OUTFIT_F : OUTFIT_M, L.outfitType), L.acc && L.acc.glasses !== 'none' ? 'okulary' : null, L.acc && L.acc.bag !== 'none' ? lab(BAGS, L.acc.bag).toLowerCase() : null].filter(Boolean).join(' · ');
+  return [lab(HAIRSTYLES_ALL, L.hairStyle) || lab(L.body === 'm' ? HAIR_M : HAIR_F, L.hairStyle), lab(L.body === 'm' ? OUTFIT_M : OUTFIT_F, L.outfitType)].filter(Boolean).join(', ');
+}
+
+// ---------- System 4 kategorii strojów (everyday, formal, sleepwear, athletic) ----------
+function legacyToLayered(L) {
+  const ot = L.outfitType || 'tee', fem = L.body !== 'm';
+  let topStyle = 'tee', bottomStyle = 'jeans', shoeStyle = L.boots ? 'boots' : 'sneakers';
+  if (ot === 'dress_flare') { topStyle = 'tank'; bottomStyle = 'skirt'; shoeStyle = 'heels'; }
+  else if (ot === 'dress_fit') { topStyle = 'tank'; bottomStyle = 'gown'; shoeStyle = 'heels'; }
+  else if (ot === 'skirt_blouse') { topStyle = 'shirt'; bottomStyle = 'skirt'; shoeStyle = 'heels'; }
+  else if (ot === 'pants_blazer' || ot === 'blazer') { topStyle = 'blazer'; bottomStyle = 'slacks'; shoeStyle = 'heels'; }
+  else if (ot === 'sweater') { topStyle = 'sweater'; bottomStyle = 'jeans'; shoeStyle = 'boots'; }
+  else if (ot === 'hoodie') { topStyle = 'hoodie'; bottomStyle = 'joggers'; shoeStyle = 'sneakers'; }
+  else if (ot === 'shirt_rolled' || ot === 'vest') { topStyle = 'shirt'; bottomStyle = 'slacks'; shoeStyle = 'heels'; }
+  return {
+    topStyle, bottomStyle, shoeStyle,
+    top: L.top || (fem ? '#ec6fb4' : '#3b5f9a'),
+    inner: L.inner || '#f4f4f4',
+    bottom: L.bottom || '#2f4f7f',
+    shoes: L.shoes || '#f4f4f4',
+    pattern: L.pattern || 'plain',
+    bottomPattern: L.bottomPattern || (bottomStyle === 'jeans' ? 'denim' : 'plain'),
+  };
+}
+
+export function defaultOutfitsFor(L) {
+  const fem = (L && L.body) !== 'm';
+  const ev = legacyToLayered(L || {});
+  return {
+    everyday: ev,
+    formal: fem
+      ? { topStyle: 'tank', bottomStyle: 'gown', shoeStyle: 'heels', top: '#8a1538', inner: '#f4f4f4', bottom: '#8a1538', shoes: '#1f1f24', pattern: 'plain', bottomPattern: 'plain' }
+      : { topStyle: 'blazer', bottomStyle: 'slacks', shoeStyle: 'heels', top: '#1f232c', inner: '#ffffff', bottom: '#1f232c', shoes: '#1f1f24', pattern: 'plain', bottomPattern: 'plain' },
+    sleepwear: fem
+      ? { topStyle: 'tank', bottomStyle: 'shorts', shoeStyle: 'slippers', top: '#c9a6e8', inner: '#ffffff', bottom: '#f4d6e8', shoes: '#f4f4f4', pattern: 'dots', bottomPattern: 'plain' }
+      : { topStyle: 'tee', bottomStyle: 'joggers', shoeStyle: 'slippers', top: '#8fd0f0', inner: '#ffffff', bottom: '#24324f', shoes: '#7a7f87', pattern: 'stripes', bottomPattern: 'plain' },
+    athletic: fem
+      ? { topStyle: 'tank', bottomStyle: 'joggers', shoeStyle: 'sneakers', top: '#e5534b', inner: '#ffffff', bottom: '#2b2f36', shoes: '#f4f4f4', pattern: 'plain', bottomPattern: 'plain' }
+      : { topStyle: 'hoodie', bottomStyle: 'shorts', shoeStyle: 'sneakers', top: '#39a06a', inner: '#ffffff', bottom: '#1f1f24', shoes: '#f4f4f4', pattern: 'plain', bottomPattern: 'plain' },
+  };
+}
+
+export function ensureOutfits(L) {
+  if (!L) return L;
+  if (!L.build) L.build = 'athletic';
+  if (!L.browColor) L.browColor = L.hair || '#4f3320';
+  if (!L.outfits) L.outfits = defaultOutfitsFor(L);
+  const defs = defaultOutfitsFor(L);
+  for (const [k] of OUTFIT_CATS) if (!L.outfits[k]) L.outfits[k] = defs[k];
+  if (!L.activeOutfit || !L.outfits[L.activeOutfit]) L.activeOutfit = 'everyday';
+  return L;
+}
+
+export function resolveOutfitLook(L, cat = null) {
+  ensureOutfits(L);
+  const k = cat || L.activeOutfit || 'everyday';
+  const o = L.outfits[k] || L.outfits.everyday;
+  return {
+    ...L,
+    gen: 2,
+    activeOutfit: k,
+    topStyle: o.topStyle,
+    bottomStyle: o.bottomStyle,
+    shoeStyle: o.shoeStyle,
+    top: o.top,
+    inner: o.inner || '#f4f4f4',
+    bottom: o.bottom,
+    shoes: o.shoes,
+    pattern: o.pattern || 'plain',
+    bottomPattern: o.bottomPattern || (o.bottomStyle === 'jeans' ? 'denim' : 'plain'),
+    boots: o.shoeStyle === 'boots',
+  };
+}
+
+export function randomOutfitForCat(cat, fem) {
+  const p = a => a[Math.floor(Math.random() * a.length)];
+  const col = () => p(CLOTH_SWATCHES);
+  if (cat === 'formal') {
+    return fem
+      ? { topStyle: p(['tank', 'blazer']), bottomStyle: p(['gown', 'skirt']), shoeStyle: 'heels', top: p(DRESSES), inner: '#ffffff', bottom: p(DRESSES), shoes: p(['#1f1f24', '#c9a27a', '#8a2e3b']), pattern: 'plain', bottomPattern: 'plain' }
+      : { topStyle: p(['blazer', 'shirt']), bottomStyle: 'slacks', shoeStyle: 'heels', top: p(JACKETS), inner: '#ffffff', bottom: p(['#1f1f24', '#24324f', '#3b4a6b']), shoes: '#1f1f24', pattern: 'plain', bottomPattern: 'plain' };
+  }
+  if (cat === 'sleepwear') {
+    return { topStyle: p(['tee', 'tank', 'sweater']), bottomStyle: p(['shorts', 'joggers']), shoeStyle: 'slippers', top: p(['#c9a6e8', '#8fd0f0', '#ec6fb4', '#f4f4f4', '#a8d48a']), inner: '#ffffff', bottom: p(['#24324f', '#f4d6e8', '#8fd0f0', '#c9a6e8']), shoes: '#f4f4f4', pattern: p(['dots', 'stripes', 'plain']), bottomPattern: 'plain' };
+  }
+  if (cat === 'athletic') {
+    return { topStyle: p(['tank', 'tee', 'hoodie']), bottomStyle: p(['joggers', 'shorts']), shoeStyle: 'sneakers', top: col(), inner: '#ffffff', bottom: p(['#1f1f24', '#2b2f36', '#2f4f7f', '#7a7f87']), shoes: '#f4f4f4', pattern: 'plain', bottomPattern: 'plain' };
+  }
+  const ts = p(TOP_STYLES)[0], bs = p(fem ? ['jeans', 'skirt', 'shorts', 'slacks', 'joggers'] : ['jeans', 'shorts', 'slacks', 'joggers']);
+  return { topStyle: ts, bottomStyle: bs, shoeStyle: p(SHOE_STYLES)[0], top: col(), inner: '#f4f4f4', bottom: bs === 'jeans' ? p(['#2f4f7f', '#3b5f9a', '#24324f']) : col(), shoes: p(SHOES), pattern: p(['plain', 'stripes', 'check', 'knit']), bottomPattern: bs === 'jeans' ? 'denim' : 'plain' };
 }

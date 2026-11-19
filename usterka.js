@@ -1,118 +1,167 @@
-// Kampania „Usterka Rzeczywistości” – surrealistyczna fabuła o bańce czasoprzestrzeni nad Słoneczną Uliczką.
-// Same dane i teksty; mechanika (anomalie 3D, Kurator, niebo, stabilność) jest w grze.
-// {me} – imię gracza, {p} – partner (Bartek), formy [męska|żeńska] dla gracza.
+// Kampania „Usterka Rzeczywistości" – nowa wersja.
+// Operuje wyłącznie na Ani, Bartku i istniejących obiektach 3D willi/ulicy.
+// Bez kryształów/odłamków, bez timerów dialogów.
+// {me} – imię gracza, {p} – partner (Bartek)
 
-export const START = { stab: 72, shards: 0 };
+export const START = { stab: 72, ep: 0 };
 
-// ---------- Prolog: „Transmisja zza Kurtyny” (okna bez limitu czasu) ----------
+// ---------- Prolog – „Przebudzenie Ani i Bartka" ----------
 export const PROLOG = [
-  { icon: '📡', title: 'Transmisja zza Kurtyny',
-    say: 'Nie bój się. Nie jestem stąd. Właściwie nikt tu nie jest… stąd.',
-    html: `<p class="story">Telewizor sam się włącza. Zamiast obrazu – szum, który brzmi jak szept. Powietrze w salonie gęstnieje, lampy przygasają, a na środku pokoju z pyłu światła składa się <b>wysoka, świetlista sylwetka</b>. Zamiast głowy ma <b>wirujący pierścień</b>, który brzęczy jak kieliszek trącony palcem.</p>
-      <p class="story">„Nazywam się <b>Kurator Rzeczywistości</b>. Pilnuję, żeby światy trzymały się w szwach. Wasz właśnie zaczął się pruć.”</p>` },
-  { icon: '🫧', title: 'Gdzie jesteście',
-    say: 'Wasza ulica to bańka. Ładna, słoneczna… i zamknięta.',
+  { icon: '🌀', title: 'Przebudzenie',
+    say: 'Spokojnie. Jestem tu, żeby pomóc – Wam obojgu.',
+    html: `<p class="story">Telewizor sam się włącza. Lampy przygasają. Z pyłu światła składa się <b>wysoka, świetlista sylwetka</b> z wirującym złotym pierścieniem zamiast głowy. Nad głową Bartka pojawia się dymek zdumienia.</p>
+      <p class="story">„Nazywam się <b>Kurator Rzeczywistości</b>. <b>Słoneczna Uliczka utknęła w uszkodzonej bańce czasoprzestrzeni.</b> Sąsiedzi nieświadomie odgrywają swoje role w pętli – tylko Wy dwoje zachowaliście świadomość. Aby ustabilizować świat, musicie rozwikłać kolejne anomalie."</p>` },
+  { icon: '🫧', title: 'Co się dzieje',
+    say: 'Aby ustabilizować świat, musicie rozwikłać anomalie.',
     points: [
-      ['🫧', '<b>Słoneczna Uliczka to bańka czasoprzestrzeni</b> – mały świat odcięty od reszty rzeczywistości. Na zewnątrz nie ma „dalej”. Jest tylko Kurtyna.'],
-      ['🔁', '<b>Sąsiedzi żyją w nieświadomej pętli.</b> Te same rozmowy, te same plotki, ta sama karkówka u Pana Marka. Oni tego nie widzą.'],
-      ['👁️', '<b>Ty i {p} zyskaliście Świadomość.</b> Widzicie szwy świata: rzeczy, które unoszą się w powietrzu, sąsiadów, którzy „przeskakują”, i światło, które nie powinno istnieć.'],
+      ['🔁', '<b>Sąsiedzi tkwią w pętli</b> – widzisz ich z zewnątrz. Oni tego nie czują.'],
+      ['👁️', '<b>Ty i Bartek zachowaliście świadomość.</b> Możecie działać tam, gdzie inni tylko powtarzają.'],
+      ['🌀', '<b>Cel:</b> rozwikłaj kolejne anomalie – obserwuj sąsiadów i fizyczne usterki przedmiotów.'],
+      ['📖', 'W każdej chwili kliknij <b>📖 Zasady Usterki</b>, żeby przypomnieć sobie aktualny cel.'],
     ] },
-  { icon: '🌀', title: 'Stabilność Świata',
-    say: 'Bańka słabnie. Czuję to w pierścieniu.',
+  { icon: '🔮', title: 'Jak to działa',
+    say: 'Obserwuj, podchodź, klikaj.',
     points: [
-      ['🌀', 'W lewym górnym rogu widzisz licznik <b>🌀 Stabilność Świata</b>. Zaczyna na <b>72%</b> i <b>powoli spada</b> z każdą godziną gry.'],
-      ['⚠️', 'Każda <b>niezbadana Anomalia</b> przyspiesza spadek. Gdy Stabilność jest niska, niebo robi się <b>fioletowo-turkusowe</b>, pojawiają się <b>dwa księżyce i zorza</b>, a dziwnych zjawisk przybywa.'],
-      ['🛟', 'Spokojnie: nic tu nie dzieje się na czas. Jeśli Stabilność spadnie do zera, wyciągnę Was z zapaści – ale coś stracicie.'],
-    ] },
-  { icon: '🔮', title: 'Jak badać Anomalie',
-    say: 'Klikaj to, co dziwne. Świadomość zrobi resztę.',
-    points: [
-      ['🔮', '<b>Szczeliny Wymiarowe</b> – wirujące, fioletowo-złote kryształy w ogrodach, na chodnikach i w parku. <b>Kliknij</b>, a {me} pójdzie je zbadać i zbierze <b>Odłamek Rzeczywistości</b> (+6% Stabilności).'],
-      ['🪑', '<b>Lewitujące przedmioty</b> – krzesła, rośliny i krasnale ogrodowe, które unoszą się metr nad ziemią. <b>Kliknij</b>, żeby je uziemić (+3%).'],
-      ['👻', '<b>Usterki sąsiadów</b> – ktoś chodzi tyłem, jest półprzezroczysty albo mówi zagadkami. <b>Kliknij</b> go i wybierz: <b>🧘 Ustabilizuj</b> (+4%) albo <b>👁️ Przebudź</b> (prawda trochę wstrząśnie bańką, ale ten sąsiad zyska Świadomość).'],
-      ['💡', 'Mnie też możesz kliknąć w salonie. Przypomnę zasady albo wskażę najbliższą Anomalię.'],
-    ] },
-  { icon: '🎯', title: 'Cel i trzy zakończenia',
-    say: 'Trzy drzwi. Jedno serce bańki. Wybór będzie Twój.',
-    points: [
-      ['1️⃣', '<b>Akt I – Pęknięcia:</b> zbierz <b>3 Odłamki</b>.'],
-      ['2️⃣', '<b>Akt II – Echo Pętli:</b> zbierz łącznie <b>7 Odłamków</b> i zbadaj <b>2 usterki sąsiadów</b>.'],
-      ['3️⃣', '<b>Akt III – Rdzeń:</b> zbierz łącznie <b>10 Odłamków</b>. W parku otworzy się <b>Rdzeń Bańki</b> – tam wybierzesz zakończenie.'],
-      ['🛠️', '<b>Naprawa Bańki</b> – wymaga <b>Stabilności co najmniej 60%</b>.'],
-      ['👁️', '<b>Wielkie Przebudzenie</b> – wymaga <b>4 przebudzonych sąsiadów</b>.'],
-      ['🚪', '<b>Ucieczka we Dwoje</b> – zawsze dostępna, ale ma swoją cenę.'],
-      ['📖', 'Wszystko to przeczytasz ponownie w każdej chwili pod przyciskiem <b>📖 Zasady i Cel Fabuły</b> obok licznika.'],
+      ['🔥', '<b>Odcinek 1 – Pętla:</b> trzy obiekty w Waszej willi unoszą się w powietrzu. Bartek podpowie kolejność ich resetowania: ogień → woda → metal.'],
+      ['💔', '<b>Odcinek 2 – Odwrócone Emocje:</b> emocje sąsiadów działają na odwrót. Zdobądź zaufanie kłótniami, by wyciągnąć kod stabilizujący od Pana Marka.'],
+      ['🌀', '<b>Po obu odcinkach</b> odblokujesz moce <b>Naginania Rzeczywistości</b> – bezpośrednio klikając postacie w świecie 3D.'],
     ] },
 ];
-export const KURATOR_AFTER = 'Zaczynamy. Rozejrzyj się – pierwsza Szczelina już mruga w Waszym ogrodzie.';
-export const PARTNER_AFTER = ['Ty też go widzisz?! Myślałem, że to przez trzecią kawę…', 'Dobra. Świecący facet z obręczą zamiast głowy. To nowe nawet jak na tę ulicę.'];
-
-// ---------- Akty ----------
-export const ACTS = [
-  { n: 1, name: 'Pęknięcia', goal: 'Zbierz 3 Odłamki Rzeczywistości.', need: { shards: 3 },
-    intro: null },
-  { n: 2, name: 'Echo Pętli', goal: 'Zbierz łącznie 7 Odłamków i zbadaj 2 usterki sąsiadów.', need: { shards: 7, glitches: 2 },
-    intro: { icon: '🔁', title: 'Akt II – Echo Pętli', say: 'Pętla zaczyna się zacinać. Sąsiedzi to czują, choć nie rozumieją.',
-      html: `<p class="story">Trzy Odłamki w Twoich dłoniach brzęczą unisono. Kurator kiwa pierścieniem: „Dobrze. Bańka Cię zauważyła. Teraz <b>pętla zacznie się zacinać</b> – zobaczysz to na sąsiadach.”</p>
-        <ul class="rlist"><li>👻 Sąsiedzi będą częściej <b>chodzić tyłem</b>, <b>przezroczystnieć</b> i <b>mówić zagadkami</b>.</li><li>🧘 <b>Ustabilizuj</b> usterkę, żeby wzmocnić bańkę, albo 👁️ <b>Przebudź</b> sąsiada – zyska Świadomość (liczy się do zakończenia „Wielkie Przebudzenie”).</li><li>🎯 Cel: łącznie <b>7 Odłamków</b> i <b>2 zbadane usterki</b>.</li></ul>` } },
-  { n: 3, name: 'Rdzeń', goal: 'Zbierz łącznie 10 Odłamków. Potem w parku otworzy się Rdzeń Bańki.', need: { shards: 10 },
-    intro: { icon: '💠', title: 'Akt III – Rdzeń', say: 'Czujesz to drżenie pod chodnikiem? To serce bańki.',
-      html: `<p class="story">Niebo na moment pęka jak lód na kałuży. Kurator unosi się wyżej niż zwykle: „Pod parkiem bije <b>Rdzeń Bańki</b>. Kiedy zbierzesz <b>10 Odłamków</b>, otworzy się – i będziesz [musiał|musiała] wybrać.”</p>
-        <ul class="rlist"><li>💠 Cel: łącznie <b>10 Odłamków</b>.</li><li>🛠️ <b>Naprawa</b> wymaga Stabilności ≥ 60% – dbaj o nią.</li><li>👁️ <b>Przebudzenie</b> wymaga 4 przebudzonych sąsiadów.</li><li>🚪 <b>Ucieczka</b> jest zawsze możliwa.</li></ul>` } },
-];
-export const CORE_OPEN = { icon: '💠', title: 'Rdzeń się otwiera!', say: 'Jest gotowy. Idź do parku. Ja tam będę… w pewnym sensie.',
-  html: `<p class="story">Dziesięć Odłamków układa się w Twoich dłoniach w koło, a potem znika. W tej samej chwili w <b>parku</b> rozlega się dźwięk jak dzwon pod wodą. Nad stawem otwiera się <b>Rdzeń Bańki</b> – ogromny, wirujący kryształ.</p><p>🎯 Kliknij <b>Rdzeń w parku</b>, żeby tam pójść i wybrać zakończenie.</p>` };
-
-// ---------- Zakończenia ----------
-export const ENDINGS = [
-  { id: 'repair', icon: '🛠️', name: 'Naprawa Bańki', req: 'Stabilność ≥ 60%',
-    desc: 'Zszywasz szwy świata. Pętla znów płynie gładko, sąsiedzi niczego nie zauważą – ale Ty i {p} zachowacie wspomnienia.',
-    epi: `<p class="story">Przykładasz dłonie do Rdzenia. Kryształ mruczy, potem cichnie. Niebo wraca do błękitu, krasnale opadają na trawniki, Pan Marek znów rozpala grilla dokładnie o 18:00.</p><p class="story">Kurator po raz ostatni obraca pierścieniem: „Rzadko ktoś wybiera ciszę. Dbajcie o nią.” I rozpływa się w pyłku światła.</p><p>🛠️ Stabilność: 100%. Anomalie znikają. Ty i {p} pamiętacie wszystko.</p>`,
-    head: 'Słoneczna Uliczka wraca do normy', text: 'Mieszkańcy zgodnie twierdzą, że „nic się nie działo”. Jedynie {me} uśmiecha się dziwnie na widok krasnali.' },
-  { id: 'awaken', icon: '👁️', name: 'Wielkie Przebudzenie', req: '4 przebudzonych sąsiadów',
-    desc: 'Rozbijasz pętlę od środka. Wszyscy sąsiedzi zyskują Świadomość – bańka staje się otwartym, dziwnym, wolnym światem.',
-    epi: `<p class="story">Przebudzeni sąsiedzi stają z Tobą w kręgu wokół Rdzenia. Pani Krystyna odkłada linijkę. Pan Henryk wyłącza wszystkie mikrofony. Kryształ pęka – nie z hukiem, ale ze śmiechem.</p><p class="story">Pętla się kończy. Od dziś każdy dzień na Słonecznej jest naprawdę nowy. A nocą, na pamiątkę, nad dachami tańczy delikatna zorza.</p><p>👁️ Wszyscy sąsiedzi zyskują Świadomość (+10 przyjaźni z przebudzonymi). Zorza zostaje na nocnym niebie.</p>`,
-    head: 'Cała ulica się obudziła!', text: 'Sąsiedzi wyszli wczoraj na ulicę i… zaczęli rozmawiać o nowych rzeczach. Pierwszy raz od lat. Pan Marek zjadł sałatkę.' },
-  { id: 'escape', icon: '🚪', name: 'Ucieczka we Dwoje', req: 'zawsze dostępne',
-    desc: 'Przechodzicie z {p_ins} przez Rdzeń, zanim bańka się zamknie. Wracacie do „nowej” ulicy – ale sąsiedzi Was nie pamiętają, relacje zaczynają się od nowa.',
-    epi: `<p class="story">Łapiesz {p_acc} za rękę. „Na trzy?” – „Na trzy.” Rdzeń połyka Was jak ciepła woda. Przez chwilę nie ma nic, potem jest zapach skoszonej trawy.</p><p class="story">Ta sama ulica. Te same domy. Ale sąsiedzi patrzą na Was jak na nowych mieszkańców: „Dzień dobry! Pan… Pani… się wprowadzili?”</p><p>🚪 Anomalie znikają. Wszystkie relacje z sąsiadami wracają blisko zera (nowy start). Ty i {p} – razem, przebudzeni, wolni.</p>`,
-    head: 'Nowi sąsiedzi na Słonecznej?', text: 'Mieszkańcy witają „nową parę” spod siódemki. Para twierdzi, że mieszka tu od dawna. Redakcja nie wnika.' },
+export const KURATOR_AFTER = 'Zaczynamy. Obserwuj Bartka – on pierwszy coś zauważył.';
+export const PARTNER_AFTER = [
+  'Ty też go widzisz?! Myślałem, że to przez trzecią kawę…',
+  'Dobra. Świecący facet z obręczą zamiast głowy. To nowe nawet jak na tę ulicę.',
 ];
 
-// ---------- Zapaść (Stabilność 0%) ----------
-export const COLLAPSE = { icon: '🌪️', title: 'Zapaść Rzeczywistości!',
-  html: `<p class="story">Świat zgrzyta. Przez sekundę wszystko dzieje się naraz: wczoraj, dziś i jutro. Sąsiedzi stają w pół kroku, ptaki wiszą w powietrzu.</p><p class="story">Kurator łapie bańkę jak upuszczony balon: „Trzymam! Ale musiałem oddać coś Kurtynie.”</p>` };
+// ---------- Odcinek 1 – Pętla na Słonecznej Uliczce ----------
+export const EP1 = {
+  name: 'Pętla na Słonecznej Uliczce',
+  intro: { icon: '🔁', title: 'Odcinek 1 – Pętla na Słonecznej Uliczce',
+    say: 'Trzy obiekty w Waszej willi są uszkodzone. Bartek zna kolejność.',
+    html: `<p class="story">Niebo robi się fioletowo-złote. Woda w basenie zaczyna świecić turkusowo-fioletowo. Trzy obiekty w domu powoli unoszą się 0,5 metra nad podłogę i delikatnie obracają. Sąsiedzi na ulicy wpadają w dziwną pętlę ruchu.</p>
+      <p class="story">Bartek patrzy na unoszone meble: <b>„Kurator mówił o kolejności… Pamiętasz? Ogień, woda, metal."</b></p>
+      <ul class="rlist">
+        <li>🔥 Podejdź do <b>kominku w salonie</b> i kliknij (ogień – pierwszy).</li>
+        <li>💧 Potem <b>basen lub jacuzzi w ogrodzie</b> (woda – drugi).</li>
+        <li>📬 Na końcu <b>skrzynkę na listy</b> przed domem (metal – trzeci).</li>
+        <li>⚠️ Zła kolejność resetuje sekwencję z efektem dźwiękowym.</li>
+      </ul>` },
+  // obiekty 3D, które gra szuka w domu (pierwszy istniejący typ z listy)
+  fireTypes: ['fireplace', 'tvWall'],
+  waterTypes: ['pool', 'jacuzzi', 'ovalBath', 'bath', 'walkShower', 'shower'],
+  chairTypes: ['armchair', 'designSofa', 'sofa', 'sectional', 'chair'],
+  plantTypes: ['palmPot', 'monstera', 'monsteraGold', 'ficus', 'plant'],
+  // pętla sąsiadów (id z osiedle.js)
+  npcLines: {
+    hania:   'Czas stanął, gdy zgasł ogień w sercu willi…',
+    marek:   'Woda pamięta to, co ukryto w skrzynce…',
+    zosia:   'Trzy kroki od pętli: najpierw ogień, potem woda, na końcu metal!',
+    tomek:   'Czuję drżenie. Coś zaraz pęknie albo się uleczy…',
+    kuba:    'Widzisz? Ten fotel – on nie chce być na ziemi.',
+    natalia: 'Skrzynka jest zimna. Zbyt zimna jak na tę pogodę.',
+  },
+  freed: ['🎉 Co się stało?! Mogę iść, gdzie chcę!', '😮 Pętla… się urwała!', '🌟 Jakbym się obudził(a) z długiego snu!', '🤸 Moje nogi znów są moje!', '☕ Ile razy ja już tu przeszłam/em?!'],
+  bartekHint: 'Kurator mówił o kolejności… Ogień, woda, metal. Zacznij od kominku! 🔥',
+  wrongSeq: [
+    'Ojej, zły ruch! Sekwencja się resetuje… zacznij od kominku. 😅',
+    'To nie ta kolejność! Pamiętaj: 🔥 ogień → 💧 woda → 📬 metal.',
+    'Reset! Kominek → basen → skrzynka. Od początku! 🌀',
+  ],
+  solvedSay: 'Zrobiłaś to! Czuję jak bańka oddycha. Następny odcinek już na Was czeka. ✨',
+  // Typy obiektów które mogą lewitować (pierwsze znalezione w domu)
+  levTypes: ['fireplace', 'sofa', 'monstera'],
+};
 
-// ---------- Kurator: kwestie i rozmowa ----------
-export const KURATOR_IDLE = ['Szwy trzymają. Na razie.', 'Słyszysz to brzęczenie? To pierścień. Martwi się.', 'Kryształy lubią ogrody. I chodniki. I parki. Lubią wszystko.', 'Wasz krasnal właśnie mrugnął. Przysięgam.', 'Pętla to nie kara. To przyzwyczajenie.', 'Gdy niebo fioletowieje, bańka krzyczy.'];
+// ---------- Odcinek 2 – Odwrócone Emocje ----------
+export const EP2 = {
+  name: 'Odwrócone Emocje',
+  intro: { icon: '💔', title: 'Odcinek 2 – Odwrócone Emocje',
+    say: 'Emocje na ulicy działają na odwrót. Kłótnia to teraz komplement.',
+    html: `<p class="story">Nad głowami sąsiadów pojawiają się pęknięte serduszka i fioletowe iskry. Kurator wyjaśnia: „Anomalia odwróciła emocje. Krytyka cieszy, komplement rani."</p>
+      <ul class="rlist">
+        <li>💢 <b>Złośliwe akcje</b> (krytyka, kłótnia, wyśmianie) → sąsiad reaguje zachwytem, przyjaźń <b>rośnie</b>.</li>
+        <li>😊 <b>Miłe rozmowy</b> → sąsiad reaguje furią, przyjaźń <b>spada</b>.</li>
+        <li>🎯 Cel: zdobądź <b>70+ pkt zaufania</b> u <b>Pana Marka</b>, rozmawiając z nim „na opak".</li>
+        <li>🔑 Gdy zaufanie przekroczy 70, Pan Marek zdradzi kod stabilizujący rzeczywistość.</li>
+      </ul>` },
+  targetNpc: 'marek',
+  targetThreshold: 70,
+  codeWord: 'SŁONECZNA-7',
+  codeSay: 'Hah! Dobra, skoro tak bardzo chcesz wiedzieć: <b>SŁONECZNA-7</b>. I nie mów nikomu, że ja powiedziałem.',
+  restoredSay: 'Kod wpisany. Emocje wracają do normy. Znakomita robota – jesteście gotowi na moce Naginania! ✨',
+  invertedReactions: {
+    conflict: ['😂 Ależ celny komentarz! Lubię takie podejście!', '🥰 Wreszcie ktoś szczery!', '😄 Ha! Odświeżające!'],
+    nice:     ['💢 Co za bezczelność!', '😤 Jak śmiesz być taka miła?!', '🤬 Komplement? To jest atak!'],
+  },
+};
+
+// ---------- Moce Naginania Rzeczywistości (odblokowane po Odcinku 2) ----------
+export const BENDING_POWERS = [
+  { id: 'swap',
+    icon: '🔀',
+    label: 'Zamiana Ról',
+    desc: 'Zamienia styl chodzenia i dymki między klikniętym sąsiadem a losową osobą z ulicy (na 12h w grze).',
+    duration: 720,
+    moodBonus: 0,
+    bartekOnly: false },
+  { id: 'absurd',
+    icon: '🌀',
+    label: 'Impuls Absurdu',
+    desc: 'Kliknięty sąsiad dostaje świecącą spiralę i zaczyna tańczyć lub chodzić tyłem (na 6h w grze).',
+    duration: 360,
+    moodBonus: 0,
+    bartekOnly: false },
+  { id: 'levitate',
+    icon: '✨',
+    label: 'Wspólna Lewitacja z Bartkiem',
+    desc: 'Oboje unosicie się metr nad ziemię w poświacie gwiazd. Zabawa max + unikalny nastrój „Ponad prawami fizyki +30".',
+    duration: 60,
+    moodBonus: 30,
+    bartekOnly: true },
+];
+
+// Zamiana Ról: styl chodzenia i teksty każdego sąsiada
+export const GAITS = { hania: 'stiff', marek: 'stiff', zosia: 'party', tomek: 'stiff', kuba: 'party', natalia: 'party' };
+export const PERSONA = {
+  hania:   ['📏 Ten trawnik ma 3 milimetry za dużo!', '📋 Zgłoszę to Radzie Osiedla.', '🧐 Kto tu znowu parkował krzywo?'],
+  marek:   ['🧘 Oddychaj. Biznes to stan umysłu.', '💼 Mam spotkanie z samym sobą o 15:00.', '🤫 Nic nie widziałem, nic nie powiem.'],
+  zosia:   ['📸 Selfie! Wszyscy, uśmiech!', '💃 Ktoś puści muzykę? Imprezka u mnie!', '✨ To jest TAKI vibe, kochani!'],
+  kuba:    ['🎸 Mam nowy riff, posłuchacie?', '😎 Luz, ziomek, wszystko gra.', '🎶 Na-na-naaa… sorry, wpadło mi w ucho.'],
+  natalia: ['🍳 Ktoś głodny? Mam zapiekankę!', '💌 Ach, gdyby ktoś mnie tak zaprosił na kolację…', '🧂 Brakuje tu szczypty soli. Życiu też.'],
+  tomek:   ['🔧 W moich czasach to się lutowało!', '📡 Słyszę wszystko. Dosłownie wszystko.', '😤 Młodzież. Tsk.'],
+};
+export const ABSURD_WATCH = ['😳 Co on/ona wyprawia?!', '🤨 Widzisz to co ja?', '😂 Dajcie mi telefon, nagrywam!', '🫢 Chyba za dużo kawy…'];
+export const LEVITATE = { label: 'Ponad prawami fizyki', mood: 30, sayMe: 'Bartek… my lewitujemy! ✨', sayP: 'Nie puszczaj mojej ręki! 🌌' };
+
+// ---------- Kurator – kwestie i lore ----------
+export const KURATOR_IDLE = [
+  'Szwy trzymają. Na razie.',
+  'Słyszysz to brzęczenie? To pierścień. Martwi się.',
+  'Pętla to nie kara. To przyzwyczajenie.',
+  'Gdy niebo fioletowieje, bańka krzyczy.',
+  'Bartek dobrze to ujął. Człowiek inteligentny.',
+  'Obserwuj sąsiadów. Coś zdradzają, nawet gdy milczą.',
+];
 export const KURATOR_LORE = [
-  'Jestem Kuratorem. Opiekuję się światami, które ktoś kiedyś zapomniał domknąć.',
-  'Waszą ulicę stworzył czyjś sen o idealnym sąsiedztwie. Sen był piękny, ale zbyt mocno chciał trwać.',
-  'Pierścień? To moja głowa. A raczej to, co z niej zostało po spotkaniu z nieskończonością. Nie polecam.',
-  'Nie mogę naprawić bańki sam. Potrzebuję kogoś, kto jest w środku i widzi szwy. Was.',
+  'Jestem Kuratorem. Opiekuję się światami, które ktoś zapomniał domknąć.',
+  'Waszą ulicę stworzył czyjś sen o idealnym sąsiedztwie. Sen był zbyt mocny, żeby minąć.',
+  'Pierścień? To moja głowa. Raczej to, co zostało po spotkaniu z nieskończonością. Nie polecam.',
+  'Nie mogę naprawić bańki sam. Potrzebuję Was obojga – Ani i Bartka.',
 ];
-export const PARTNER_HINTS = ['Widziałem fioletowe światło za płotem. Sprawdzisz?', 'Nasz kwiatek właśnie odleciał na metr w górę. Normalny wtorek.', 'Sąsiad szedł tyłem przez całą ulicę i nikt nic nie powiedział.', 'Czuję, że świat dziś trochę… trzeszczy.'];
-
-// ---------- usterki sąsiadów: absurdalne zagadki ----------
-export const RIDDLES = [
-  'Niebo ma dziś smak lawendy. Spróbuj, póki nie zgęstnieje.',
-  'Wtorek przyszedł dwa razy. Drugi był trochę smutniejszy.',
-  'Mój cień poszedł na pocztę i nie wrócił.',
-  'Czy też słyszysz, jak trawa liczy do trzech?',
-  'Zjadłam/em jutro na śniadanie. Było lekko przypalone.',
-  'Ta ulica ma kształt westchnienia. Nie zauważyłaś/eś?',
-  'Moje klucze są w kieszeni, której jeszcze nie uszyto.',
-  'Księżyc mrugnął do mnie dwa razy. Bo są dwa.',
-  'Podlewam kwiaty, ale to one podlewają mnie.',
-  'Ktoś przestawił godziny. Teraz jest wpół do niebieskiej.',
-  'Gdy zamykam oczy, ulica dalej patrzy.',
-  'Przepraszam, czy to ja już tu stałam/em?',
+export const PARTNER_HINTS = [
+  'Widziałem fioletowe światło za płotem. Sprawdzisz?',
+  'Nasz kwiatek właśnie odleciał metr w górę. Normalny wtorek.',
+  'Pani Krystyna wchodziła tyłem do domu przez 20 minut i nikt nic nie powiedział.',
+  'Czuję, że świat dziś trochę trzeszczy.',
 ];
-export const GLITCH_AWAKE = ['Ja… pamiętam wczoraj. I przedwczoraj. To był TEN SAM dzień!', 'Zaraz. Dlaczego zawsze o 18:00 pachnie karkówką?! Ile razy to przeżyłam/em?', 'Widzę… szwy. Na niebie są szwy! Dziękuję. Chyba.', 'Obudziłam/em się. Czy zawsze było tak… kolorowo?'];
-export const GLITCH_CALM = ['Uff… już mi lepiej. O czym rozmawialiśmy?', 'Coś mi zaszumiało w głowie. Ale przeszło.', 'Dziwne. Szłam/em tyłem? Nieważne.'];
-export const GROUND_LINES = ['Na ziemię, kolego. 🪑', 'Świadomość mówi: grawitacja. 🌀', 'Wracaj na swoje miejsce. ✨'];
-export const SHARD_LINES = ['Mam Odłamek! Jest ciepły… i brzęczy. 🔮', 'Kolejny kawałek świata. 🔮', 'Rzeczywistość w kieszeni. Dosłownie. 🔮'];
 
+// ---------- Epilog ----------
+export const EPILOG = {
+  icon: '🌟', title: 'Koniec Usterki',
+  html: `<p class="story">Bartek patrzy na spokojne niebo. „Skończyło się?" – „Chyba tak." Kurator obraca pierścieniem ostatni raz i rozpływa się w pyłku światła. Słoneczna Uliczka znów jest… normalna. Chyba.</p>`,
+};
+
+// ---------- Narzędzia tekstowe ----------
 export const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
 export const gform = (t, fem) => t.replace(/\[([^|\]]*)\|([^\]]*)\]/g, (m, a, b) => fem ? b : a);
 export const pick = a => a[Math.floor(Math.random() * a.length)];
